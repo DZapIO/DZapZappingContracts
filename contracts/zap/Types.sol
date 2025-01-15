@@ -48,8 +48,8 @@ struct ZapData {
     bytes callData;
     bool isDelegateCall;
     uint256 nativeValue;
-    InputToken[] inputTokens;
-    OutputToken[] outputTokens;
+    uint128 inputLength;
+    uint128 outputLength;
 }
 
 struct InputErc20Tokens {
@@ -61,9 +61,4 @@ struct InputErc20Tokens {
 struct ReferralFeeInfo {
     uint96 tokenFeeShare; // ex 1%
     uint96 nativeFeeShare; // ex 0.5 Matic
-}
-
-struct TokenFeeData {
-    address tokenAddress;
-    uint256 fee;
 }

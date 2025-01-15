@@ -14,9 +14,8 @@ import { IZap } from "../shared/interfaces/IZap.sol";
 
 import { DzapRegistry } from "../shared/DzapRegistry.sol";
 
-import { ZapData, TokenType, InputTransferType, OutputTransferType, InputToken, OutputToken, InputErc20Tokens, ReferralFeeInfo, TokenFeeData } from "./Types.sol";
-
-import { InvalidFeeVault, UnauthorizedCall, CallFailed, InvalidTokenOwner, InvalidReturnAmount, ZeroAddress, InvalidInputLength, InvalidOutputLength, FeeTokenMismatched, ReferralAlreadyAdded, FeeTokenMismatched, ReferralAlreadyAdded, InvalidOutputType, NoTransferToNullAddress } from "../shared/Errors.sol";
+import { ZapData, TokenType, InputTransferType, OutputTransferType, InputToken, OutputToken, InputErc20Tokens, ReferralFeeInfo } from "./Types.sol";
+import { InvalidFeeVault, CallFailed, InvalidTokenOwner, InvalidReturnAmount, ZeroAddress, InvalidInputLength, InvalidOutputLength, ReferralAlreadyAdded, ReferralAlreadyAdded, InvalidOutputType, NoTransferToNullAddress, InvalidReferral, UnauthorizedCaller } from "../shared/Errors.sol";
 
 contract Zap is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, IZap {
     // -------------STATE-------------
@@ -39,8 +38,14 @@ contract Zap is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, IZap {
 
     mapping(address => ReferralFeeInfo) public referralFeeInfo;
     mapping(address => uint256) public nonce;
+    mapping(address => bool) public admins;
 
     // -------------MODIFIERS-------------
+
+    modifier onlyOwnerOrAdmin() {
+        require(msg.sender == owner() || admins[msg.sender], UnauthorizedCaller());
+        _;
+    }
 
     modifier refundExcessNative(address _refundee) {
         uint256 initialBalance = address(this).balance - msg.value;
@@ -88,7 +93,17 @@ contract Zap is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, IZap {
         emit FeeVaultSet(_feeVault);
     }
 
-    function addReferral(address _referral, uint96 _nativeFeeShare, uint96 _tokenFeeShare) external onlyOwner {
+    function addAdmin(address _account) external onlyOwner {
+        admins[_account] = true;
+        emit AdminAdded(_account);
+    }
+
+    function removeAdmin(address _account) external onlyOwner {
+        admins[_account] = false;
+        emit AdminRemoved(_account);
+    }
+
+    function addReferral(address _referral, uint96 _nativeFeeShare, uint96 _tokenFeeShare) external onlyOwnerOrAdmin {
         require(_referral != address(0), ZeroAddress());
 
         referralFeeInfo[_referral] = ReferralFeeInfo(_nativeFeeShare, _tokenFeeShare);
@@ -137,16 +152,15 @@ contract Zap is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, IZap {
     // solhint-disable-next-line code-complexity
     function zap(
         bytes32 _transactionId,
-        bytes calldata _tokenFeeData,
+        bytes calldata _data,
         bytes calldata _signature,
         address _referral,
-        ZapData[] calldata _zapData,
         InputErc20Tokens[] calldata _inputTokens,
         address[] calldata _sweepDust
     ) external payable refundExcessNative(msg.sender) nonReentrant {
-        _handleVerification(_transactionId, _tokenFeeData, _signature);
+        _handleVerification(_transactionId, _data, _signature);
         _handleErcDeposits(_inputTokens);
-        _handleZap(_tokenFeeData, _referral, _zapData);
+        _handleZap(_data, _referral);
         _handleSweepTokens(_sweepDust);
 
         emit Zapped(msg.sender, _transactionId);
@@ -177,18 +191,15 @@ contract Zap is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, IZap {
         }
     }
 
-    function _execute(
-        bool _isDelegateCall,
-        address _callTo,
-        bytes memory _callData,
-        uint256 _nativeValue
-    ) private returns (bool success, bytes memory res) {
-        if (_isDelegateCall) {
-            (success, res) = _callTo.delegatecall(_callData);
-            require(success, CallFailed(res));
-        } else {
-            (success, res) = _callTo.call{ value: _nativeValue }(_callData);
-            require(success, CallFailed(res));
+    function _execute(ZapData memory _zapData) private returns (bool success, bytes memory res) {
+        if (_zapData.callData.length > 0) {
+            if (_zapData.isDelegateCall) {
+                (success, res) = _zapData.callTo.delegatecall(_zapData.callData);
+                require(success, CallFailed(res));
+            } else {
+                (success, res) = _zapData.callTo.call{ value: _zapData.nativeValue }(_zapData.callData);
+                require(success, CallFailed(res));
+            }
         }
     }
 
@@ -227,10 +238,37 @@ contract Zap is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, IZap {
         }
     }
 
-    function _revokeErc1155Approvals(InputToken[] calldata inputTokens) private {
+    function _revokeErc1155Approvals(InputToken[] memory inputTokens) private {
         for (uint256 j = 0; j < inputTokens.length; ++j) {
             if (inputTokens[j].transferType == InputTransferType.ApproveForSpender) {
                 LibAsset.revokeERC1155(inputTokens[j].tokenAddress, inputTokens[j].approveTo);
+            }
+        }
+    }
+
+    function _getOutputTokensInitialBalance(
+        uint256 _calldataLength,
+        uint256 _outputLength,
+        uint256 _outputCount,
+        OutputToken[] memory _outputTokens
+    ) private view returns (uint256[] memory) {
+        if (_calldataLength > 0) {
+            uint256 outputEndIndex = _outputCount + _outputLength;
+            uint256[] memory initialOutputBalances = new uint256[](_outputLength);
+            for (uint256 i = _outputCount; i < outputEndIndex; ++i) {
+                OutputToken memory outputToken = _outputTokens[i];
+
+                address recipient = _getRecipient(outputToken);
+
+                if (outputToken.tokenType == TokenType.ERC20) {
+                    initialOutputBalances[i] = LibAsset.getBalance(outputToken.tokenAddress, recipient);
+                } else if (outputToken.tokenType == TokenType.ERC1155) {
+                    initialOutputBalances[i] = LibAsset.getBalanceOfERC1155(
+                        outputToken.tokenAddress,
+                        recipient,
+                        outputToken.tokenId
+                    );
+                }
             }
         }
     }
@@ -326,13 +364,13 @@ contract Zap is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, IZap {
 
     function _handleERC20Output(
         OutputToken memory _outputToken,
-        address recipient,
-        uint256 initialBalance,
+        address _recipient,
+        uint256 _initialBalance,
         uint256 _tokenFee,
         uint256 _referralFee,
         address _referralAddress
     ) private returns (uint256 totalFeeAmount, uint256 referralFeeAmount) {
-        uint256 returnAmount = LibAsset.getBalance(_outputToken.tokenAddress, recipient) - initialBalance;
+        uint256 returnAmount = LibAsset.getBalance(_outputToken.tokenAddress, _recipient) - _initialBalance;
 
         require(returnAmount >= _outputToken.minReturn, InvalidReturnAmount(returnAmount, _outputToken.minReturn));
 
@@ -353,12 +391,12 @@ contract Zap is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, IZap {
 
     function _handleNativeOutput(
         OutputToken memory _outputToken,
-        address recipient,
-        uint256 initialBalance,
+        address _recipient,
+        uint256 _initialBalance,
         uint256 _tokenFee,
         uint256 _referralFee
     ) private returns (uint256 totalFeeAmount, uint256 referralFeeAmount) {
-        uint256 returnAmount = LibAsset.getBalance(_outputToken.tokenAddress, recipient) - initialBalance;
+        uint256 returnAmount = LibAsset.getBalance(_outputToken.tokenAddress, _recipient) - _initialBalance;
 
         require(returnAmount >= _outputToken.minReturn, InvalidReturnAmount(returnAmount, _outputToken.minReturn));
 
@@ -374,32 +412,36 @@ contract Zap is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, IZap {
         }
     }
 
-    function _handleERC721Output(OutputToken memory outputToken, address recipient) private {
-        if (outputToken.transferType == OutputTransferType.ReceiveAndTransfer) {
-            LibAsset.transferERC721(outputToken.tokenAddress, recipient, outputToken.tokenId);
-        } else if (outputToken.transferType == OutputTransferType.DirectTransferToRecipient) {
+    function _handleERC721Output(OutputToken memory _outputToken, address _recipient) private {
+        if (_outputToken.transferType == OutputTransferType.ReceiveAndTransfer) {
+            LibAsset.transferERC721(_outputToken.tokenAddress, _recipient, _outputToken.tokenId);
+        } else if (_outputToken.transferType == OutputTransferType.DirectTransferToRecipient) {
             require(
-                recipient == LibAsset.getOwnerOfERC721(outputToken.tokenAddress, outputToken.tokenId),
-                InvalidTokenOwner(outputToken.tokenId)
+                _recipient == LibAsset.getOwnerOfERC721(_outputToken.tokenAddress, _outputToken.tokenId),
+                InvalidTokenOwner(_outputToken.tokenId)
             );
         }
     }
 
-    function _handleERC1155Output(OutputToken memory outputToken, address recipient, uint256 initialBalance) private {
+    function _handleERC1155Output(
+        OutputToken memory _outputToken,
+        address _recipient,
+        uint256 _initialBalance
+    ) private {
         uint256 returnAmount = LibAsset.getBalanceOfERC1155(
-            outputToken.tokenAddress,
+            _outputToken.tokenAddress,
             address(this),
-            outputToken.tokenId
-        ) - initialBalance;
+            _outputToken.tokenId
+        ) - _initialBalance;
 
-        require(returnAmount >= outputToken.minReturn, InvalidReturnAmount(returnAmount, outputToken.minReturn));
+        require(returnAmount >= _outputToken.minReturn, InvalidReturnAmount(returnAmount, _outputToken.minReturn));
 
-        if (outputToken.transferType == OutputTransferType.ReceiveAndTransfer) {
+        if (_outputToken.transferType == OutputTransferType.ReceiveAndTransfer) {
             LibAsset.transferERC1155(
-                outputToken.tokenAddress,
+                _outputToken.tokenAddress,
                 address(this),
-                recipient,
-                outputToken.tokenId,
+                _recipient,
+                _outputToken.tokenId,
                 returnAmount
             );
         }
@@ -407,27 +449,26 @@ contract Zap is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, IZap {
 
     function _processInputTokens(
         address _referral,
-        uint256 inputCount,
-        ZapData calldata zapData,
-        ReferralFeeInfo memory referralFee,
-        TokenFeeData[] memory inputTokenFeeData
+        uint256 _inputCount,
+        ZapData memory _zapData,
+        InputToken[] memory _inputTokens,
+        ReferralFeeInfo memory _referralFee
     ) private returns (uint256 totalNativeFeeAmount, uint256 totalReferralNativeFeeAmount) {
-        for (uint256 j = 0; j < zapData.inputTokens.length; ++j) {
-            InputToken memory inputToken = zapData.inputTokens[j];
-            TokenFeeData memory feeData = inputTokenFeeData[inputCount + j];
-            require(feeData.tokenAddress == inputToken.tokenAddress, FeeTokenMismatched());
+        uint256 length = _inputCount + _zapData.inputLength;
+        for (uint256 i = _inputCount; i < length; ++i) {
+            InputToken memory inputToken = _inputTokens[i];
 
             if (inputToken.tokenType == TokenType.NATIVE) {
                 (uint256 totalFeeAmount, uint256 referralFeeAmount) = _handleNativeInput(
                     inputToken,
-                    feeData.fee,
-                    referralFee.tokenFeeShare
+                    inputToken.fee,
+                    _referralFee.tokenFeeShare
                 );
 
                 totalNativeFeeAmount += totalFeeAmount;
                 totalReferralNativeFeeAmount += referralFeeAmount;
             } else if (inputToken.tokenType == TokenType.ERC20) {
-                _handleErc20Input(inputToken, feeData.fee, referralFee.tokenFeeShare, _referral);
+                _handleErc20Input(inputToken, inputToken.fee, _referralFee.tokenFeeShare, _referral);
             } else if (inputToken.tokenType == TokenType.ERC721) {
                 _handleErc721Input(inputToken);
             } else if (inputToken.tokenType == TokenType.ERC1155) {
@@ -438,35 +479,34 @@ contract Zap is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, IZap {
 
     function _processOutputTokens(
         address _referral,
-        uint256 outputCount,
-        ZapData calldata zapData,
-        ReferralFeeInfo memory referralFee,
-        TokenFeeData[] memory outputTokenFeeData,
-        uint256[] memory initialOutputBalances
+        uint256 _outputCount,
+        ZapData memory _zapData,
+        OutputToken[] memory _outputTokens,
+        ReferralFeeInfo memory _referralFee,
+        uint256[] memory _initialOutputBalances
     ) private returns (uint256 totalNativeFeeAmount, uint256 totalReferralNativeFeeAmount) {
-        for (uint256 j = 0; j < zapData.outputTokens.length; ++j) {
-            OutputToken memory outputToken = zapData.outputTokens[j];
-            TokenFeeData memory feeData = outputTokenFeeData[outputCount + j];
+        uint256 length = _outputCount + _zapData.outputLength;
 
-            require(feeData.tokenAddress == outputToken.tokenAddress, FeeTokenMismatched());
+        for (uint256 i = _outputCount; i < length; ++i) {
+            OutputToken memory outputToken = _outputTokens[i];
             address recipient = _getRecipient(outputToken);
 
             if (outputToken.tokenType == TokenType.ERC20) {
                 _handleERC20Output(
                     outputToken,
                     recipient,
-                    initialOutputBalances[j],
-                    feeData.fee,
-                    referralFee.tokenFeeShare,
+                    _initialOutputBalances[i],
+                    outputToken.fee,
+                    _referralFee.tokenFeeShare,
                     _referral
                 );
             } else if (outputToken.tokenType == TokenType.NATIVE) {
                 (uint256 totalFeeAmount, uint256 referralFeeAmount) = _handleNativeOutput(
                     outputToken,
                     recipient,
-                    initialOutputBalances[j],
-                    feeData.fee,
-                    referralFee.tokenFeeShare
+                    _initialOutputBalances[i],
+                    outputToken.fee,
+                    _referralFee.tokenFeeShare
                 );
 
                 totalNativeFeeAmount += totalFeeAmount;
@@ -474,7 +514,7 @@ contract Zap is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, IZap {
             } else if (outputToken.tokenType == TokenType.ERC721) {
                 _handleERC721Output(outputToken, recipient);
             } else if (outputToken.tokenType == TokenType.ERC1155) {
-                _handleERC1155Output(outputToken, recipient, initialOutputBalances[j]);
+                _handleERC1155Output(outputToken, recipient, _initialOutputBalances[i]);
             }
         }
     }
@@ -515,74 +555,62 @@ contract Zap is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, IZap {
         }
     }
 
-    function _handleZap(bytes calldata _tokenFeeData, address _referral, ZapData[] calldata _zapData) private {
-        (TokenFeeData[] memory inputTokenFeeData, TokenFeeData[] memory outputTokenFeeData, uint256 nativeFee) = abi
-            .decode(_tokenFeeData, (TokenFeeData[], TokenFeeData[], uint256));
+    function _handleZap(bytes calldata _data, address _referral) private {
+        (
+            InputToken[] memory inputTokens,
+            OutputToken[] memory outputTokens,
+            ZapData[] memory zapData,
+            uint256 nativeFee,
+            address referral
+        ) = abi.decode(_data, (InputToken[], OutputToken[], ZapData[], uint256, address));
+
+        require(referral == _referral, InvalidReferral());
 
         ReferralFeeInfo memory referralFee = referralFeeInfo[_referral];
         uint256 totalReferralNativeFeeAmount;
         uint256 totalNativeFeeAmount;
         uint256 inputCount;
         uint256 outputCount;
-        uint256 length = _zapData.length;
+        uint256 length = zapData.length;
 
         for (uint256 i; i < length; i++) {
-            // ZapData memory zapData = _zapData[i];
-
-            uint256 inputTokenLength = _zapData[i].inputTokens.length;
-            uint256 outputTokenLength = _zapData[i].outputTokens.length;
-            uint256[] memory initialOutputBalances = new uint256[](outputTokenLength);
-
             (uint256 nativeFeeAmount, uint256 referralNativeFeeAmount) = _processInputTokens(
                 _referral,
                 inputCount,
-                _zapData[i],
-                referralFee,
-                inputTokenFeeData
+                zapData[i],
+                inputTokens,
+                referralFee
             );
-            inputCount += inputTokenLength;
+            inputCount += zapData[i].inputLength;
             totalNativeFeeAmount += nativeFeeAmount;
             totalReferralNativeFeeAmount += referralNativeFeeAmount;
 
-            if (_zapData[i].callData.length > 0) {
-                require(registry.isTargetWhitelisted(_zapData[i].callTo), UnauthorizedCall(_zapData[i].callTo));
+            uint256[] memory initialOutputBalances = _getOutputTokensInitialBalance(
+                zapData[i].callData.length,
+                zapData[i].outputLength,
+                outputCount,
+                outputTokens
+            );
 
-                for (uint256 j = 0; j < outputTokenLength; ++j) {
-                    OutputToken memory outputToken = _zapData[i].outputTokens[j];
-
-                    address recipient = _getRecipient(outputToken);
-
-                    if (outputToken.tokenType == TokenType.ERC20) {
-                        initialOutputBalances[j] = LibAsset.getBalance(outputToken.tokenAddress, recipient);
-                    } else if (outputToken.tokenType == TokenType.ERC1155) {
-                        initialOutputBalances[j] = LibAsset.getBalanceOfERC1155(
-                            outputToken.tokenAddress,
-                            recipient,
-                            outputToken.tokenId
-                        );
-                    }
-                }
-            }
-
-            _execute(_zapData[i].isDelegateCall, _zapData[i].callTo, _zapData[i].callData, _zapData[i].nativeValue);
+            _execute(zapData[i]);
 
             (nativeFeeAmount, referralNativeFeeAmount) = _processOutputTokens(
                 _referral,
                 outputCount,
-                _zapData[i],
+                zapData[i],
+                outputTokens,
                 referralFee,
-                outputTokenFeeData,
                 initialOutputBalances
             );
-            outputCount += outputTokenLength;
+            outputCount += zapData[i].outputLength;
             totalNativeFeeAmount += nativeFeeAmount;
             totalReferralNativeFeeAmount += referralNativeFeeAmount;
-
-            _revokeErc1155Approvals(_zapData[i].inputTokens);
         }
 
-        require(inputCount == inputTokenFeeData.length, InvalidInputLength());
-        require(outputCount == outputTokenFeeData.length, InvalidOutputLength());
+        require(inputCount == inputTokens.length, InvalidInputLength());
+        require(outputCount == outputTokens.length, InvalidOutputLength());
+
+        _revokeErc1155Approvals(inputTokens);
 
         _transferNativeFee(
             nativeFee,

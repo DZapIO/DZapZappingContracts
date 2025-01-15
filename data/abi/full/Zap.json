@@ -69,11 +69,6 @@
     "type": "error"
   },
   {
-    "inputs": [],
-    "name": "FeeTokenMismatched",
-    "type": "error"
-  },
-  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -122,6 +117,11 @@
   {
     "inputs": [],
     "name": "InvalidPermitData",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidReferral",
     "type": "error"
   },
   {
@@ -236,20 +236,40 @@
     "type": "error"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "UnauthorizedCall",
+    "inputs": [],
+    "name": "UnauthorizedCaller",
     "type": "error"
   },
   {
     "inputs": [],
     "name": "ZeroAddress",
     "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "AdminAdded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "AdminRemoved",
+    "type": "event"
   },
   {
     "anonymous": false,
@@ -400,6 +420,19 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "_account",
+        "type": "address"
+      }
+    ],
+    "name": "addAdmin",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "_referral",
         "type": "address"
       },
@@ -417,6 +450,25 @@
     "name": "addReferral",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "admins",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -747,6 +799,19 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_account",
+        "type": "address"
+      }
+    ],
+    "name": "removeAdmin",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "renounceOwnership",
     "outputs": [],
@@ -807,7 +872,7 @@
       },
       {
         "internalType": "bytes",
-        "name": "_tokenFeeData",
+        "name": "_data",
         "type": "bytes"
       },
       {
@@ -819,117 +884,6 @@
         "internalType": "address",
         "name": "_referral",
         "type": "address"
-      },
-      {
-        "components": [
-          {
-            "internalType": "address",
-            "name": "callTo",
-            "type": "address"
-          },
-          {
-            "internalType": "bytes",
-            "name": "callData",
-            "type": "bytes"
-          },
-          {
-            "internalType": "bool",
-            "name": "isDelegateCall",
-            "type": "bool"
-          },
-          {
-            "internalType": "uint256",
-            "name": "nativeValue",
-            "type": "uint256"
-          },
-          {
-            "components": [
-              {
-                "internalType": "enum TokenType",
-                "name": "tokenType",
-                "type": "uint8"
-              },
-              {
-                "internalType": "enum InputTransferType",
-                "name": "transferType",
-                "type": "uint8"
-              },
-              {
-                "internalType": "address",
-                "name": "tokenAddress",
-                "type": "address"
-              },
-              {
-                "internalType": "address",
-                "name": "approveTo",
-                "type": "address"
-              },
-              {
-                "internalType": "uint256",
-                "name": "amount",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "tokenId",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "fee",
-                "type": "uint256"
-              }
-            ],
-            "internalType": "struct InputToken[]",
-            "name": "inputTokens",
-            "type": "tuple[]"
-          },
-          {
-            "components": [
-              {
-                "internalType": "enum TokenType",
-                "name": "tokenType",
-                "type": "uint8"
-              },
-              {
-                "internalType": "enum OutputTransferType",
-                "name": "transferType",
-                "type": "uint8"
-              },
-              {
-                "internalType": "address",
-                "name": "tokenAddress",
-                "type": "address"
-              },
-              {
-                "internalType": "address",
-                "name": "recipient",
-                "type": "address"
-              },
-              {
-                "internalType": "uint256",
-                "name": "minReturn",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "tokenId",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "fee",
-                "type": "uint256"
-              }
-            ],
-            "internalType": "struct OutputToken[]",
-            "name": "outputTokens",
-            "type": "tuple[]"
-          }
-        ],
-        "internalType": "struct ZapData[]",
-        "name": "_zapData",
-        "type": "tuple[]"
       },
       {
         "components": [

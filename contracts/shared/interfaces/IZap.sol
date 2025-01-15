@@ -1,13 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 
-import { ZapData, InputErc20Tokens } from "../../zap/Types.sol";
+import { InputErc20Tokens } from "../../zap/Types.sol";
 
 interface IZap {
     // -------------EVENTS-------------
 
     event FeeVaultSet(address indexed feeVault);
     event ReferralAdded(address indexed referral);
+    event AdminAdded(address indexed account);
+    event AdminRemoved(address indexed account);
     event Zapped(address indexed user, bytes32 indexed transactionId);
 
     // -------------RESTRICTED-------------
@@ -37,10 +39,9 @@ interface IZap {
 
     function zap(
         bytes32 _transactionId,
-        bytes calldata _tokenFeeData,
+        bytes calldata _data,
         bytes calldata _signature,
         address _referral,
-        ZapData[] calldata _zapData,
         InputErc20Tokens[] calldata _inputTokens,
         address[] calldata _sweepDust
     ) external payable;

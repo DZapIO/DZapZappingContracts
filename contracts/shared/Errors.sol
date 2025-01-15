@@ -47,6 +47,7 @@ error InvalidProtocol();
 
 error InvalidInputLength();
 error InvalidOutputLength();
-error FeeTokenMismatched();
 error ReferralAlreadyAdded();
 error InvalidOutputType();
+error InvalidReferral();
+error UnauthorizedCaller();

@@ -6,19 +6,27 @@ import { InputErc20Tokens } from "../../zap/Types.sol";
 interface IZap {
     // -------------EVENTS-------------
 
+    event DefaultReferralFeeSet();
     event FeeVaultSet(address indexed feeVault);
+    event ZapVerifierSet(address indexed verifier);
     event ReferralAdded(address indexed referral);
     event AdminAdded(address indexed account);
     event AdminRemoved(address indexed account);
     event Zapped(address indexed user, bytes32 indexed transactionId);
-
-    // -------------RESTRICTED-------------
-
     event TokenRecovered(address indexed token, address indexed recipient, uint256 amount);
     event ERC721Recovered(address indexed token, address indexed recipient, uint256 id);
     event ERC1155Recovered(address indexed token, address indexed recipient, uint256[] ids, uint256[] amounts);
 
+    // -------------RESTRICTED-------------
+
+    function setDefaultReferralFee(
+        uint96 _defaultReferralNativeFeeShare,
+        uint96 _defaultReferralTokenFeeShare
+    ) external;
+
     function setFeeVault(address _feeVault) external;
+
+    function setVerifier(address _verifier) external;
 
     function addReferral(address _referral, uint96 _nativeFeeShare, uint96 _tokenFeeShare) external;
 

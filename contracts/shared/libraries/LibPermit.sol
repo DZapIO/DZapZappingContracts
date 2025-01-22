@@ -46,7 +46,7 @@ library LibPermit {
     function permit(address _token, bytes memory _data) internal {
         if (_data.length == 32 * 7) {
             (bool success, ) = _token.call(abi.encodePacked(IERC20Permit.permit.selector, _data));
-            if (!success) revert InvalidPermit();
+            require(success, InvalidPermit());
         } else revert InvalidPermitData();
     }
 }

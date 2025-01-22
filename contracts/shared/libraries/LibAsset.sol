@@ -44,7 +44,7 @@ library LibAsset {
 
     function transferNativeToken(address _to, uint256 _amount) internal {
         require(_to != address(0), NoTransferToNullAddress());
-        require(address(this).balance > _amount, InsufficientBalance(_amount, address(this).balance));
+        require(address(this).balance >= _amount, InsufficientBalance(_amount, address(this).balance));
 
         (bool success, ) = _to.call{ value: _amount }("");
         require(success, NativeTransferFailed());
@@ -61,33 +61,24 @@ library LibAsset {
 
     function transferFromERC20(address _token, address _from, address _to, uint256 _amount) internal {
         IERC20 token = IERC20(_token);
-
         uint256 prevBalance = token.balanceOf(_to);
         SafeERC20.safeTransferFrom(token, _from, _to, _amount);
-        if (token.balanceOf(_to) - prevBalance != _amount) {
-            revert InvalidAmount();
-        }
+        require(token.balanceOf(_to) - prevBalance == _amount, InvalidAmount());
     }
 
     function approveERC20(address _token, address _spender, uint256 _amount) internal {
-        if (_spender == address(0)) revert NullAddrIsNotAValidSpender();
-
+        require(_spender != address(0), NullAddrIsNotAValidSpender());
         revokeERC20(_token, _spender);
-
         SafeERC20.safeIncreaseAllowance(IERC20(_token), _spender, _amount);
     }
 
     function revokeERC20(address _token, address _spender) internal {
         uint256 allowance = IERC20(_token).allowance(address(this), _spender);
-        // console.log("revokeERC20", allowance);
-        if (allowance > 0) {
-            SafeERC20.safeDecreaseAllowance(IERC20(_token), _spender, allowance);
-        }
+        if (allowance > 0) SafeERC20.safeDecreaseAllowance(IERC20(_token), _spender, allowance);
     }
 
     function approveERC721(address _token, address _to, uint256 _tokenId) internal {
-        if (_to == address(0)) revert NullAddrIsNotAValidSpender();
-
+        require(_to != address(0), NullAddrIsNotAValidSpender());
         IERC721(_token).approve(_to, _tokenId);
     }
 
@@ -130,9 +121,9 @@ library LibAsset {
     ) internal {
         (PermitType permitType, bytes memory data) = abi.decode(permit_, (PermitType, bytes));
 
-        if (permitType == PermitType.PERMIT2) {
+        if (permitType == PermitType.PERMIT2)
             LibPermit.permit2ApproveAndTransfer(_permit2, _from, _to, uint160(_amount), _token, data);
-        } else {
+        else {
             if (data.length != 0) LibPermit.permit(_token, data);
             transferFromERC20(_token, _from, _to, _amount);
         }

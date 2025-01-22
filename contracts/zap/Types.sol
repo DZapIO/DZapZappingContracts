@@ -20,7 +20,6 @@ enum OutputTransferType {
     ReceiveInContract, // Token comes into the contract, UseMinAndReturnRemainder
     ReceiveAndTransfer, // Token comes into the contract first, then is transferred to the recipient
     DirectTransferToRecipient // Token is already transferred directly to the recipient
-    // UseAllForNextStep // Retain all tokens for use in the next input step
 }
 
 struct InputToken {

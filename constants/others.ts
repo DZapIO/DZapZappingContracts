@@ -6,3 +6,4 @@ export const dummyKey =
 export const DEFAULT_BYTES = '0x'
 
 export const DEFAULT_ERC20_PERMIT_VERSION = '1'
+export const DZAP_DOMAIN_VERIFIER_NAME = 'DZapVerifier'

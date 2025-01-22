@@ -17,6 +17,15 @@ dotenv.config()
 const config: HardhatUserConfig = {
   defaultNetwork: 'hardhat',
   networks: {
+    hardhat: {
+      chains: {
+        [CHAIN_IDS.BASE_MAINNET]: {
+          hardforkHistory: {
+            london: 25120000,
+          },
+        },
+      },
+    },
     ethereum: getNetworkConfig(CHAIN_IDS.ETH_MAINNET),
     polygon: getNetworkConfig(CHAIN_IDS.POLYGON_MAINNET),
     blast: getNetworkConfig(CHAIN_IDS.BLAST_MAINNET),
@@ -69,14 +78,7 @@ const config: HardhatUserConfig = {
       runOnCompile: true,
       path: 'data/abi/pretty',
       format: 'fullName',
-      only: [
-        'Zap',
-        // 'DZapWalletFactory',
-        // 'DZapWallet',
-        // 'DZapALM',
-        // 'DZapRegistry',
-        // 'DZapAutomation',
-      ],
+      only: ['Zap'],
       flat: true,
       clear: true,
     },

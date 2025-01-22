@@ -8,18 +8,28 @@
       },
       {
         "internalType": "address",
-        "name": "_registry",
+        "name": "_feeVault",
         "type": "address"
       },
       {
         "internalType": "address",
-        "name": "_feeVault",
+        "name": "_verifier",
         "type": "address"
       },
       {
         "internalType": "address",
         "name": "_permit2",
         "type": "address"
+      },
+      {
+        "internalType": "uint96",
+        "name": "_defaultReferralNativeFeeShare",
+        "type": "uint96"
+      },
+      {
+        "internalType": "uint96",
+        "name": "_defaultReferralTokenFeeShare",
+        "type": "uint96"
       },
       {
         "internalType": "bytes32",
@@ -117,11 +127,6 @@
   {
     "inputs": [],
     "name": "InvalidPermitData",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "InvalidReferral",
     "type": "error"
   },
   {
@@ -242,6 +247,11 @@
   },
   {
     "inputs": [],
+    "name": "UnauthorizedSigner",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "ZeroAddress",
     "type": "error"
   },
@@ -269,6 +279,12 @@
       }
     ],
     "name": "AdminRemoved",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [],
+    "name": "DefaultReferralFeeSet",
     "type": "event"
   },
   {
@@ -403,6 +419,19 @@
       {
         "indexed": true,
         "internalType": "address",
+        "name": "verifier",
+        "type": "address"
+      }
+    ],
+    "name": "ZapVerifierSet",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
         "name": "user",
         "type": "address"
       },
@@ -500,19 +529,6 @@
   {
     "inputs": [],
     "name": "feeVault",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "feeVerifier",
     "outputs": [
       {
         "internalType": "address",
@@ -786,19 +802,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "registry",
-    "outputs": [
-      {
-        "internalType": "contract DzapRegistry",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "address",
@@ -821,12 +824,43 @@
   {
     "inputs": [
       {
+        "internalType": "uint96",
+        "name": "_defaultReferralNativeFeeShare",
+        "type": "uint96"
+      },
+      {
+        "internalType": "uint96",
+        "name": "_defaultReferralTokenFeeShare",
+        "type": "uint96"
+      }
+    ],
+    "name": "setDefaultReferralFee",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_feeVault",
         "type": "address"
       }
     ],
     "name": "setFeeVault",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_verifier",
+        "type": "address"
+      }
+    ],
+    "name": "setVerifier",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -861,6 +895,19 @@
     "name": "transferOwnership",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "verifier",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {

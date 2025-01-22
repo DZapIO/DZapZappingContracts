@@ -90,12 +90,7 @@ library LibAsset {
         IERC721(_token).safeTransferFrom(_from, _to, _id);
     }
 
-    function transferBatchERC1155(
-        address _token,
-        address _to,
-        uint256[] memory _ids,
-        uint256[] memory _amounts
-    ) internal {
+    function transferBatchERC1155(address _token, address _to, uint256[] memory _ids, uint256[] memory _amounts) internal {
         IERC1155(_token).safeBatchTransferFrom(address(this), _to, _ids, _amounts, "");
     }
 
@@ -111,18 +106,10 @@ library LibAsset {
         IERC1155(_token).setApprovalForAll(_spender, false);
     }
 
-    function depositErc20(
-        address _permit2,
-        address _token,
-        address _from,
-        address _to,
-        uint256 _amount,
-        bytes memory permit_
-    ) internal {
+    function depositErc20(address _permit2, address _token, address _from, address _to, uint256 _amount, bytes memory permit_) internal {
         (PermitType permitType, bytes memory data) = abi.decode(permit_, (PermitType, bytes));
 
-        if (permitType == PermitType.PERMIT2)
-            LibPermit.permit2ApproveAndTransfer(_permit2, _from, _to, uint160(_amount), _token, data);
+        if (permitType == PermitType.PERMIT2) LibPermit.permit2ApproveAndTransfer(_permit2, _from, _to, uint160(_amount), _token, data);
         else {
             if (data.length != 0) LibPermit.permit(_token, data);
             transferFromERC20(_token, _from, _to, _amount);

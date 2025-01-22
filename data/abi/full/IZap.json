@@ -277,6 +277,24 @@
   {
     "inputs": [
       {
+        "internalType": "uint96",
+        "name": "_defaultReferralNativeFeeShare",
+        "type": "uint96"
+      },
+      {
+        "internalType": "uint96",
+        "name": "_defaultReferralTokenFeeShare",
+        "type": "uint96"
+      }
+    ],
+    "name": "setDefaultReferralFee",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_feeVault",
         "type": "address"

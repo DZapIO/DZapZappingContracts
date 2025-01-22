@@ -12,9 +12,7 @@ error UnauthorizedCaller();
 
 // ----------ASSETS----------
 
-error InsufficientBalance(uint256 required, uint256 balance);
 error NativeTransferFailed();
-error NullAddrIsNotAnERC20Token();
 error InvalidAmount();
 error NullAddrIsNotAValidSpender();
 

@@ -8,7 +8,7 @@ import { IERC1155 } from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import { PermitType } from "../Types.sol";
 import { LibPermit } from "./LibPermit.sol";
 
-import { InsufficientBalance, NativeTransferFailed, NullAddrIsNotAnERC20Token, NoTransferToNullAddress, InvalidAmount, NullAddrIsNotAValidSpender } from "../Errors.sol";
+import { NativeTransferFailed, NoTransferToNullAddress, InvalidAmount, NullAddrIsNotAValidSpender } from "../Errors.sol";
 
 // import "hardhat/console.sol";
 library LibAsset {
@@ -18,8 +18,10 @@ library LibAsset {
 
     // -------------VIEWS-------------
 
-    function isNativeToken(address _token) internal pure returns (bool) {
-        return _token == _NATIVE_TOKEN;
+    function selfNativeBalance() internal view returns (uint256 contractBalance) {
+        assembly {
+            contractBalance := selfbalance()
+        }
     }
 
     function getBalance(address _token, address _account) internal view returns (uint256) {
@@ -44,18 +46,11 @@ library LibAsset {
 
     function transferNativeToken(address _to, uint256 _amount) internal {
         require(_to != address(0), NoTransferToNullAddress());
-        require(address(this).balance >= _amount, InsufficientBalance(_amount, address(this).balance));
-
         (bool success, ) = _to.call{ value: _amount }("");
         require(success, NativeTransferFailed());
     }
 
     function transferERC20(address _token, address _to, uint256 _amount) internal {
-        require(!isNativeToken(_token), NullAddrIsNotAnERC20Token());
-
-        uint256 assetBalance = IERC20(_token).balanceOf(address(this));
-        require(assetBalance >= _amount, InsufficientBalance(_amount, assetBalance));
-
         SafeERC20.safeTransfer(IERC20(_token), _to, _amount);
     }
 
@@ -74,7 +69,7 @@ library LibAsset {
 
     function revokeERC20(address _token, address _spender) internal {
         uint256 allowance = IERC20(_token).allowance(address(this), _spender);
-        if (allowance > 0) SafeERC20.safeDecreaseAllowance(IERC20(_token), _spender, allowance);
+        if (allowance != 0) SafeERC20.safeDecreaseAllowance(IERC20(_token), _spender, allowance);
     }
 
     function approveERC721(address _token, address _to, uint256 _tokenId) internal {

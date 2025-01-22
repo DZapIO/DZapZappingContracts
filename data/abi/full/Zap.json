@@ -79,22 +79,6 @@
     "type": "error"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "required",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "balance",
-        "type": "uint256"
-      }
-    ],
-    "name": "InsufficientBalance",
-    "type": "error"
-  },
-  {
     "inputs": [],
     "name": "InvalidAmount",
     "type": "error"
@@ -169,11 +153,6 @@
   {
     "inputs": [],
     "name": "NullAddrIsNotAValidSpender",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "NullAddrIsNotAnERC20Token",
     "type": "error"
   },
   {
@@ -485,7 +464,7 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "",
+        "name": "admin",
         "type": "address"
       }
     ],
@@ -493,7 +472,7 @@
     "outputs": [
       {
         "internalType": "bool",
-        "name": "",
+        "name": "isAdmin",
         "type": "bool"
       }
     ],
@@ -543,7 +522,7 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "",
+        "name": "user",
         "type": "address"
       }
     ],
@@ -551,7 +530,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "nonce",
         "type": "uint256"
       }
     ],
@@ -774,7 +753,7 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "",
+        "name": "referrer",
         "type": "address"
       }
     ],

@@ -6,7 +6,7 @@ module.exports = {
     {
       files: '*.sol',
       options: {
-        printWidth: 120,
+        printWidth: 1500,
         tabWidth: 4,
         singleQuote: false,
         explicitTypes: 'always',

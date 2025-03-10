@@ -24,8 +24,16 @@ library LibAsset {
         }
     }
 
+    function getErc20Balance(address _token, address _account) internal view returns (uint256) {
+        return IERC20(_token).balanceOf(_account);
+    }
+   
     function getBalance(address _token, address _account) internal view returns (uint256) {
         return _token == _NATIVE_TOKEN ? _account.balance : IERC20(_token).balanceOf(_account);
+    }
+   
+    function getNativeBalance(address _account) internal view returns (uint256) {
+        return _account.balance;
     }
 
     function getOwnerOfERC721(address _token, uint256 _id) internal view returns (address) {

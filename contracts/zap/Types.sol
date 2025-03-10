@@ -58,6 +58,6 @@ struct InputErc20Tokens {
 }
 
 struct ReferralFeeInfo {
-    uint96 tokenFeeShare; // ex 1%
     uint96 nativeFeeShare; // ex 0.5 Matic
+    uint96 tokenFeeShare; // ex 1%
 }

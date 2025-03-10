@@ -16,6 +16,25 @@ error NativeTransferFailed();
 error InvalidAmount();
 error NullAddrIsNotAValidSpender();
 
+// ----------Wallet----------
+
+error InvalidWalletImp();
+error AlreadyDeployed();
+error AddressIsWallet();
+error InvalidAccount();
+error InvalidNativeValue();
+error SigDeadlineExpired();
+error NonceAlreadyProcessed();
+error ExecutorNotWhitelisted();
+error NoLabel();
+error WalletNotDeployed();
+error WalletExecutionCallFailed(bytes);
+error ExecutorUnauthorizedAccount(address);
+error OwnableUnauthorizedAccount(address);
+error WithdrawFailed();
+error InvalidArrayLength();
+error QuorumTooLow();
+
 // ----------ZAP----------
 
 error InvalidFeeVault();

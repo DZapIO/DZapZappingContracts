@@ -27,7 +27,7 @@
   "error ZeroAddress()",
   "event AdminAdded(address indexed account)",
   "event AdminRemoved(address indexed account)",
-  "event DefaultReferralFeeSet()",
+  "event DefaultReferralFeeSet(uint256 defaultReferralNativeFeeShare, uint256 defaultReferralTokenFeeShare)",
   "event ERC1155Recovered(address indexed token, address indexed recipient, uint256[] ids, uint256[] amounts)",
   "event ERC721Recovered(address indexed token, address indexed recipient, uint256 id)",
   "event FeeVaultSet(address indexed feeVault)",
@@ -35,7 +35,7 @@
   "event ReferralAdded(address indexed referral)",
   "event TokenRecovered(address indexed token, address indexed recipient, uint256 amount)",
   "event ZapVerifierSet(address indexed verifier)",
-  "event Zapped(address indexed user, bytes32 indexed transactionId)",
+  "event Zapped(address indexed user, bytes32 indexed txId)",
   "function addAdmin(address _account)",
   "function addReferral(address _referral, uint96 _nativeFeeShare, uint96 _tokenFeeShare)",
   "function admins(address admin) view returns (bool isAdmin)",
@@ -51,7 +51,7 @@
   "function recoverERC1155(address _token, address _recipient, uint256[] _ids, uint256[] _amounts)",
   "function recoverERC721(address _token, address _recipient, uint256 _id)",
   "function recoverToken(address _token, address _recipient, uint256 _amount)",
-  "function referralFeeInfo(address referrer) view returns (uint96 tokenFeeShare, uint96 nativeFeeShare)",
+  "function referralFeeInfo(address referrer) view returns (uint96 nativeFeeShare, uint96 tokenFeeShare)",
   "function registerAsReferral()",
   "function removeAdmin(address _account)",
   "function renounceOwnership()",
@@ -61,5 +61,5 @@
   "function supportsInterface(bytes4 interfaceId) view returns (bool)",
   "function transferOwnership(address newOwner)",
   "function verifier() view returns (address)",
-  "function zap(bytes32 _transactionId, bytes _data, bytes _signature, address _referral, tuple(address token, uint256 amount, bytes permit)[] _inputTokens, address[] _sweepDust) payable"
+  "function zap(bytes32 _transactionId, bytes _data, bytes _signature, address _referral, tuple(address token, uint256 amount, bytes permit)[] _inputTokens, address[] _sweepDust, address _dustReciever) payable"
 ]

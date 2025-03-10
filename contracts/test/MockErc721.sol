@@ -8,13 +8,19 @@ contract MockErc721 is ERC721URIStorage {
 
     constructor() ERC721("MockNft", "MN") {}
 
-    function mint(address user, uint256 noOfNfts) public {
-        uint256 tempNextId = _nextTokenId;
-        for (uint256 i; i < noOfNfts; ++i) {
-            uint256 tokenId = ++tempNextId;
-            _mint(user, tokenId);
-        }
+    // function mint(address user, uint256 noOfNfts) public {
+    //     uint256 tempNextId = _nextTokenId;
+    //     for (uint256 i; i < noOfNfts; ++i) {
+    //         uint256 tokenId = ++tempNextId;
+    //         _mint(user, tokenId);
+    //     }
 
-        _nextTokenId = tempNextId;
+    //     _nextTokenId = tempNextId;
+    // }
+   
+    function mint(address user, uint256[] memory nftIds) public {
+        for (uint256 i; i < nftIds.length; ++i) {
+            _mint(user, nftIds[i]);
+        }
     }
 }

@@ -12,5 +12,14 @@ module.exports = {
         explicitTypes: 'always',
       },
     },
+    {
+      files: '*.json',
+      options: {
+        tabWidth: 2,
+        useTabs: false,
+        printWidth: 20,
+        singleQuote: true
+      },
+    },
   ],
 }

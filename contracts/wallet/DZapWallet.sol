@@ -12,8 +12,6 @@ import { IDZapWallet } from "../interfaces/IDZapWallet.sol";
 
 import { ExecutorUnauthorizedAccount, CallFailed } from "../shared/Errors.sol";
 
-import "hardhat/console.sol";
-
 contract DZapWallet is Initializable, MinimalWallet, ReentrancyGuard, IDZapWallet {
     // -------------STATE-------------
 
@@ -34,47 +32,23 @@ contract DZapWallet is Initializable, MinimalWallet, ReentrancyGuard, IDZapWalle
     }
 
     function initialize(address _user) public initializer {
-        console.log("initialize", _user);
-        console.log("chainid", block.chainid);
-        console.log("address(this)", address(this));
-        console.log("DZAP_REGISTRY", address(DZAP_REGISTRY));
-
         _setOwner(_user);
     }
 
     // -------------EXTERNAL-------------
 
-    function executeByExecutor(
-        bytes32 _txId,
-        address[] calldata _callTo,
-        bytes[] calldata _callData,
-        uint256[] calldata _nativeValue,
-        bool[] calldata _isDelegateCall
-    ) external payable onlyAuthorizedExecutor nonReentrant {
-        console.log("-------executeByExecutor------------", msg.sender, msg.value);
+    function executeByExecutor(bytes32 _txId, address[] calldata _callTo, bytes[] calldata _callData, uint256[] calldata _nativeValue, bool[] calldata _isDelegateCall) external payable onlyAuthorizedExecutor nonReentrant {
         uint256 length = _callTo.length;
         for (uint256 i; i < length; ++i) {
-            console.log("-------------------", i);
-            console.log("nativeValue, isDelegateCall", _callTo[i], _nativeValue[i], _isDelegateCall[i]);
             _execute(_callTo[i], _callData[i], _nativeValue[i], _isDelegateCall[i]);
         }
 
         emit Executed(_txId);
     }
 
-    function execute(
-        bytes32 _txId,
-        address[] calldata _callTo,
-        bytes[] calldata _callData,
-        uint256[] calldata _nativeValue,
-        bool[] calldata _isDelegateCall
-    ) external payable onlyOwner nonReentrant {
-        console.log("-------execute------------", msg.sender, msg.value);
-
+    function execute(bytes32 _txId, address[] calldata _callTo, bytes[] calldata _callData, uint256[] calldata _nativeValue, bool[] calldata _isDelegateCall) external payable onlyOwner nonReentrant {
         uint256 length = _callTo.length;
         for (uint256 i; i < length; ++i) {
-            console.log("-------------------", i);
-            console.log("nativeValue, isDelegateCall", _callTo[i], _nativeValue[i], _isDelegateCall[i]);
             _execute(_callTo[i], _callData[i], _nativeValue[i], _isDelegateCall[i]);
         }
 
@@ -83,12 +57,7 @@ contract DZapWallet is Initializable, MinimalWallet, ReentrancyGuard, IDZapWalle
 
     // -------------INTERNAL-------------
 
-    function _execute(
-        address _callTo,
-        bytes memory _callData,
-        uint256 _nativeValue,
-        bool _isDelegateCall
-    ) private returns (bool success, bytes memory res) {
+    function _execute(address _callTo, bytes memory _callData, uint256 _nativeValue, bool _isDelegateCall) private returns (bool success, bytes memory res) {
         if (_callData.length != 0) {
             if (_isDelegateCall) {
                 (success, res) = _callTo.delegatecall(_callData);

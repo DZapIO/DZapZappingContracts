@@ -7,8 +7,6 @@ import { IERC1155 } from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import { IERC20Metadata } from "@openzeppelin/contracts/interfaces/IERC20Metadata.sol";
 import { ERC1155Holder } from "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 
-import "hardhat/console.sol";
-
 contract MockErc1155Dex is ERC1155Holder {
     using SafeERC20 for IERC20;
 
@@ -34,63 +32,40 @@ contract MockErc1155Dex is ERC1155Holder {
         nftPrice[_nftAddress][_token] = _price;
     }
 
-    function swapTokenToNft(
-        address _token,
-        address _nftAddress,
-        address _recipient,
-        uint256 _nftId,
-        uint256 _amount
-    ) external payable {
-        console.log("----swapErc20ToNft-------");
+    function swapTokenToNft(address _token, address _nftAddress, address _recipient, uint256 _nftId, uint256 _amount) external payable {
         uint256 price = nftPrice[_nftAddress][_token];
-        console.log("price", price);
         require(price > 0, "Price Not set");
 
         uint256 totalPrice = _amount * price;
-        
-        if(isNative(_token)) {
+
+        if (isNative(_token)) {
             require(msg.value == totalPrice, "Insufficient payment");
         } else {
             IERC20(_token).safeTransferFrom(msg.sender, address(this), totalPrice);
         }
         IERC1155(_nftAddress).safeTransferFrom(address(this), _recipient, _nftId, _amount, "");
     }
-   
-    function swapNftToToken(
-        address _nftAddress,
-        address _token,
-        address _recipient,
-        uint256 _nftId,
-        uint256 _amount,
-        bool _alreadyTransfered
-    ) external {
-        console.log("----swapNftToErc20-------");
+
+    function swapNftToToken(address _nftAddress, address _token, address _recipient, uint256 _nftId, uint256 _amount, bool _alreadyTransfered) external {
         uint256 price = nftPrice[_nftAddress][_token];
-        console.log("price", price);
         require(price > 0, "Price Not set");
 
         uint256 totalPrice = _amount * price;
-        console.log("totalPrice", totalPrice);
 
-
-        if(_alreadyTransfered) {
+        if (_alreadyTransfered) {
             require(IERC1155(_nftAddress).balanceOf(address(this), _nftId) == _amount, "NFT not transfered");
         } else {
             IERC1155(_nftAddress).safeTransferFrom(msg.sender, address(this), _nftId, _amount, "");
         }
 
-        console.log("nft transfered");
-
-        if(isNative(_token)) {
+        if (isNative(_token)) {
             (bool success, ) = _recipient.call{ value: totalPrice }("");
             require(success, "NativeTransferFailed");
         } else {
-            console.log("balanceOf", IERC20(_token).balanceOf(address(this)));
             IERC20(_token).transfer(_recipient, totalPrice);
         }
     }
 
-   
     // -------------------------------
 
     function isNative(address token_) private pure returns (bool) {
@@ -98,7 +73,6 @@ contract MockErc1155Dex is ERC1155Holder {
     }
 
     // -------------------------------
-
 
     // Able to receive ether
     // solhint-disable-next-line no-empty-blocks

@@ -6,7 +6,6 @@ import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import { IERC20Metadata } from "@openzeppelin/contracts/interfaces/IERC20Metadata.sol";
 import { IERC721 } from "@openzeppelin/contracts/interfaces/IERC721.sol";
 import { ERC721Holder } from "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
-import "hardhat/console.sol";
 
 contract MockErc721Dex is ERC721Holder {
     using SafeERC20 for IERC20;
@@ -39,49 +38,32 @@ contract MockErc721Dex is ERC721Holder {
     // -------------------------------
 
     function setNftPrices(address _nftAddress, address _token, uint256 _price) external {
-        require(_price > 0, "Invalid price");
         nftPrice[_nftAddress][_token] = _price;
     }
 
-    function swapTokenToNft(
-        address _token,
-        address _nftAddress,
-        address _recipient,
-        uint256 _nftId
-    ) external payable {
-        console.log("----swapErc20ToNft-------");
+    function swapTokenToNft(address _token, address _nftAddress, address _recipient, uint256 _nftId) external payable {
         uint256 price = nftPrice[_nftAddress][_token];
-        console.log("price", price);
         require(price > 0, "Price Not set");
-        
-        if(isNative(_token)) {
+
+        if (isNative(_token)) {
             require(msg.value == price, "Insufficient payment");
         } else {
             IERC20(_token).safeTransferFrom(msg.sender, address(this), price);
         }
         IERC721(_nftAddress).safeTransferFrom(address(this), _recipient, _nftId);
     }
-   
-    function swapNftToToken(
-        address _nftAddress,
-        address _token,
-        address _recipient,
-        uint256 _nftId,
-        bool _alreadyTransfered
-    ) external {
-        console.log("----swapNftToErc20-------");
+
+    function swapNftToToken(address _nftAddress, address _token, address _recipient, uint256 _nftId, bool _alreadyTransfered) external {
         uint256 price = nftPrice[_nftAddress][_token];
-        console.log("price", price);
         require(price > 0, "Price Not set");
 
-
-        if(_alreadyTransfered) {
+        if (_alreadyTransfered) {
             require(IERC721(_nftAddress).ownerOf(_nftId) == address(this), "NFT not transfered");
         } else {
             IERC721(_nftAddress).safeTransferFrom(msg.sender, address(this), _nftId);
         }
 
-        if(isNative(_token)) {
+        if (isNative(_token)) {
             (bool success, ) = _recipient.call{ value: price }("");
             require(success, "NativeTransferFailed");
         } else {

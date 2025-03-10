@@ -6,7 +6,6 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
 import { IDZapRegistry } from "../interfaces/IDZapRegistry.sol";
 import { ZeroAddress } from "./Errors.sol";
-import "hardhat/console.sol";
 
 contract DZapRegistry is Ownable, IDZapRegistry {
     // -------------STATE-------------
@@ -24,7 +23,6 @@ contract DZapRegistry is Ownable, IDZapRegistry {
     // -------------VIEW-------------
 
     function isExecutorWhitelisted(address _executor) external view returns (bool) {
-        console.log("DZapRegistry isExecutorWhitelisted", _executor, _executors[_executor]);
         return _executors[_executor];
     }
 

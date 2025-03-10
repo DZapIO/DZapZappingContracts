@@ -78,11 +78,7 @@ abstract contract MinimalWallet is ERC721Holder, ERC1155Holder, IMinimalWallet {
     // @notice Withdraw ERC20s
     // @param erc20s An array of erc20 addresses
     // @param amounts An array of amounts for each erc20
-    function withdrawERC20s(
-        IERC20[] calldata erc20s,
-        uint256[] calldata amounts,
-        address[] calldata recipients
-    ) external onlyOwner {
+    function withdrawERC20s(IERC20[] calldata erc20s, uint256[] calldata amounts, address[] calldata recipients) external onlyOwner {
         uint256 length = erc20s.length;
         if (amounts.length != length) revert InvalidArrayLength();
         for (uint256 i; i < length; ) {
@@ -94,11 +90,7 @@ abstract contract MinimalWallet is ERC721Holder, ERC1155Holder, IMinimalWallet {
     // @notice Withdraw multiple ERC721 ids for a single ERC721 contract
     // @param erc721 The address of the ERC721 contract
     // @param ids An array of ids that are to be withdrawn
-    function withdrawERC721s(
-        IERC721[] calldata erc721s,
-        uint256[] calldata ids,
-        address[] calldata recipients
-    ) external onlyOwner {
+    function withdrawERC721s(IERC721[] calldata erc721s, uint256[] calldata ids, address[] calldata recipients) external onlyOwner {
         uint256 length = ids.length;
         for (uint256 i; i < length; ) {
             _withdrawERC721s(erc721s[i], ids[i], recipients[i]);
@@ -109,12 +101,7 @@ abstract contract MinimalWallet is ERC721Holder, ERC1155Holder, IMinimalWallet {
     // @param erc1155 The address of the ERC155 contract
     // @param ids An array of ids that are to be withdrawn
     // @param amounts An array of amounts per id
-    function withdrawERC1155s(
-        IERC1155 erc1155,
-        uint256[] calldata ids,
-        uint256[] calldata amounts,
-        address recipient
-    ) external onlyOwner {
+    function withdrawERC1155s(IERC1155 erc1155, uint256[] calldata ids, uint256[] calldata amounts, address recipient) external onlyOwner {
         _withdrawERC1155s(erc1155, ids, amounts, recipient);
     }
 
@@ -176,12 +163,7 @@ abstract contract MinimalWallet is ERC721Holder, ERC1155Holder, IMinimalWallet {
         erc721.safeTransferFrom(address(this), recipient, ids);
     }
 
-    function _withdrawERC1155s(
-        IERC1155 erc1155,
-        uint256[] memory ids,
-        uint256[] memory amounts,
-        address recipient
-    ) internal {
+    function _withdrawERC1155s(IERC1155 erc1155, uint256[] memory ids, uint256[] memory amounts, address recipient) internal {
         // safeBatchTransferFrom will validate the array lengths
         erc1155.safeBatchTransferFrom(address(this), recipient, ids, amounts, "");
     }

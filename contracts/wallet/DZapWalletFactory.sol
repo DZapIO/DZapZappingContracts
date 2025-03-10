@@ -9,8 +9,6 @@ import { ZeroAddress, InvalidWalletImp, AlreadyDeployed, AddressIsWallet, NoLabe
 
 import { IDZapWalletFactory } from "../interfaces/IDZapWalletFactory.sol";
 import { IDZapWallet } from "../interfaces/IDZapWallet.sol";
-import "hardhat/console.sol";
-
 // to upgrade all the wallets we need to upgrade
 contract DZapWalletFactory is Ownable, Pausable, IDZapWalletFactory {
     // -------------STATE-------------
@@ -64,11 +62,8 @@ contract DZapWalletFactory is Ownable, Pausable, IDZapWalletFactory {
     // -------------EXTERNAL-------------
 
     function deploy(address _user, string memory _label) external whenNotPaused returns (address wallet) {
-        console.log("----deploy-----");
-        console.log(_user, _label);
         if (bytes(_label).length == 0) revert NoLabel();
         bytes32 salt = _createSalt(_user, _label);
-        console.logBytes32(salt);
 
         require(saltToWallet[salt] == address(0), AlreadyDeployed());
         require(walletToUser[_user] == address(0), AddressIsWallet());
@@ -77,13 +72,10 @@ contract DZapWalletFactory is Ownable, Pausable, IDZapWalletFactory {
     }
 
     function getOrDeploy(address _user, string memory _label) external whenNotPaused returns (address wallet) {
-        console.log("----getOrDeploy-----");
-        console.log(_user, _label);
         if (bytes(_label).length == 0) revert NoLabel();
         if (walletToUser[_user] != address(0)) return _user;
 
         bytes32 salt = _createSalt(_user, _label);
-        console.logBytes32(salt);
         if ((wallet = saltToWallet[salt]) != address(0)) return wallet;
 
         return _deploy(_user, salt);
@@ -94,7 +86,6 @@ contract DZapWalletFactory is Ownable, Pausable, IDZapWalletFactory {
     function _deploy(address _user, bytes32 _salt) internal returns (address wallet) {
         require(_user != address(0), ZeroAddress());
         wallet = Clones.cloneDeterministic(walletImp, _salt);
-        console.log("_deploy", _user, wallet);
 
         IDZapWallet(payable(wallet)).initialize(_user);
 
@@ -102,7 +93,6 @@ contract DZapWalletFactory is Ownable, Pausable, IDZapWalletFactory {
         walletToUser[wallet] = _user;
 
         emit WalletDeployed(_user, wallet, _salt);
-        console.log("----wallet deployed-----");
     }
 
     function _createSalt(address _user, string memory _label) private pure returns (bytes32) {

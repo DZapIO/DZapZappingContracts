@@ -3,8 +3,6 @@ pragma solidity 0.8.28;
 
 import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
-import "hardhat/console.sol";
-
 library LibValidator {
     error InvalidSignatureLength();
     error QuorumNotReached();
@@ -27,14 +25,7 @@ library LibValidator {
      * @param _hash The digest of the message that was signed (must match the digest used during signing).
      * @param _quorum The minimum number of valid signatures required.
      */
-    function verifyValidatorSigs(
-        mapping(address => bool) storage _validators,
-        bytes memory _signatures,
-        bytes32 _hash,
-        uint8 _quorum
-    ) internal view {
-        console.log("---------verifyValidatorSigs----------", _quorum);
-
+    function verifyValidatorSigs(mapping(address => bool) storage _validators, bytes memory _signatures, bytes32 _hash, uint8 _quorum) internal view {
         // Ensure there is at least one byte to read the signature count.
         require(_signatures.length > 0, InvalidSignatureLength());
 
@@ -42,17 +33,12 @@ library LibValidator {
         uint8 sigsCount = uint8(_signatures[0]);
         require(sigsCount >= _quorum, QuorumNotReached());
 
-        console.log("sigsCount:", sigsCount);
-        console.log("_signatures.length:", _signatures.length);
-
         uint256 expectedLength = 1 + (65 * sigsCount);
         require(_signatures.length == expectedLength, InvalidSignatureLength());
 
         address[] memory seenValidators = new address[](_quorum);
 
         for (uint256 i = 0; i < _quorum; ++i) {
-            console.log("-------", i);
-
             uint256 sigOffset = 1 + (i * 65);
             bytes32 r;
             bytes32 s;
@@ -65,8 +51,6 @@ library LibValidator {
             }
 
             address validator = ECDSA.recover(_hash, v, r, s);
-            console.log("validator", validator);
-
             require(_validators[validator], NotAValidator(i, validator));
             require(!arrayContains(seenValidators, validator), SignatureAlreadyProcessed());
             seenValidators[i] = validator;

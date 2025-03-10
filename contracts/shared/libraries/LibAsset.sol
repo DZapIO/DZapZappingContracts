@@ -10,7 +10,6 @@ import { LibPermit } from "./LibPermit.sol";
 
 import { NativeTransferFailed, NoTransferToNullAddress, InvalidAmount, NullAddrIsNotAValidSpender } from "../Errors.sol";
 
-// import "hardhat/console.sol";
 library LibAsset {
     using SafeERC20 for IERC20;
 
@@ -27,11 +26,11 @@ library LibAsset {
     function getErc20Balance(address _token, address _account) internal view returns (uint256) {
         return IERC20(_token).balanceOf(_account);
     }
-   
+
     function getBalance(address _token, address _account) internal view returns (uint256) {
         return _token == _NATIVE_TOKEN ? _account.balance : IERC20(_token).balanceOf(_account);
     }
-   
+
     function getNativeBalance(address _account) internal view returns (uint256) {
         return _account.balance;
     }

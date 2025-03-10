@@ -20,7 +20,7 @@ struct AddLiquidityData {
 }
 
 struct SwapData {
-    address callTo; // dzapSwap, zap, router, dex, aggregator
+    address callTo; // dZapSwap, zap, router, dex, aggregator
     bytes callData;
     uint256 nativeValue;
     uint256 minReturnAmount;
@@ -46,27 +46,13 @@ contract AerodromeRouterAdapter {
         require(success, CallFailed(res));
 
         // desired + return
-        uint256 amount0 = IERC20(_addLiquidityData.token0).balanceOf(address(this)) -
-            initialAmount0 +
-            _addLiquidityData.amount0Desired;
-        uint256 amount1 = IERC20(_addLiquidityData.token1).balanceOf(address(this)) -
-            initialAmount1 +
-            _addLiquidityData.amount1Desired;
+        uint256 amount0 = IERC20(_addLiquidityData.token0).balanceOf(address(this)) - initialAmount0 + _addLiquidityData.amount0Desired;
+        uint256 amount1 = IERC20(_addLiquidityData.token1).balanceOf(address(this)) - initialAmount1 + _addLiquidityData.amount1Desired;
 
         // approve (for add)
         IERC20(_addLiquidityData.token0).approve(_addLiquidityData.router, amount0);
         IERC20(_addLiquidityData.token1).approve(_addLiquidityData.router, amount1);
 
-        IAerodromeRouter(_addLiquidityData.router).addLiquidity(
-            _addLiquidityData.token0,
-            _addLiquidityData.token1,
-            _addLiquidityData.isStablePool,
-            amount0,
-            amount1,
-            _addLiquidityData.amount0Min,
-            _addLiquidityData.amount1Min,
-            _addLiquidityData.recipient,
-            block.timestamp
-        );
+        IAerodromeRouter(_addLiquidityData.router).addLiquidity(_addLiquidityData.token0, _addLiquidityData.token1, _addLiquidityData.isStablePool, amount0, amount1, _addLiquidityData.amount0Min, _addLiquidityData.amount1Min, _addLiquidityData.recipient, block.timestamp);
     }
 }

@@ -17,7 +17,7 @@ contract MockErc721 is ERC721URIStorage {
 
     //     _nextTokenId = tempNextId;
     // }
-   
+
     function mint(address user, uint256[] memory nftIds) public {
         for (uint256 i; i < nftIds.length; ++i) {
             _mint(user, nftIds[i]);

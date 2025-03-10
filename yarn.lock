@@ -1372,7 +1372,7 @@
     lodash "^4.17.15"
     ts-essentials "^7.0.1"
 
-"@typechain/hardhat@^9.0.0":
+"@typechain/hardhat@^9.1.0":
   version "9.1.0"
   resolved "https://registry.yarnpkg.com/@typechain/hardhat/-/hardhat-9.1.0.tgz#6985015f01dfb37ef2ca8a29c742d05890351ddc"
   integrity sha512-mtaUlzLlkqTlfPwB3FORdejqBskSnh+Jl8AIJGjXNAQfRQ4ofHADPl1+oU7Z3pAJzmZbUXII8MhOLQltcHgKnA==
@@ -2689,6 +2689,11 @@ dashdash@^1.12.0:
   dependencies:
     assert-plus "^1.0.0"
 
+dataloader@^2.2.2:
+  version "2.2.3"
+  resolved "https://registry.yarnpkg.com/dataloader/-/dataloader-2.2.3.tgz#42d10b4913515f5b37c6acedcb4960d6ae1b1517"
+  integrity sha512-y2krtASINtPFS1rSDjacrFgn1dcUuoREVabwlOGOe4SdxenREqwjwjElAdwvbGM7kgZz9a3KVicWR7vcz8rnzA==
+
 death@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/death/-/death-1.1.0.tgz#01aa9c401edd92750514470b8266390c66c67318"
@@ -3297,6 +3302,13 @@ ethereumjs-util@^7.0.3, ethereumjs-util@^7.1.0, ethereumjs-util@^7.1.1, ethereum
     create-hash "^1.1.2"
     ethereum-cryptography "^0.1.3"
     rlp "^2.2.4"
+
+ethers-multicall-provider@^6.4.2:
+  version "6.4.2"
+  resolved "https://registry.yarnpkg.com/ethers-multicall-provider/-/ethers-multicall-provider-6.4.2.tgz#6c921533e28722704dcd6d9b09bddc637e3503bf"
+  integrity sha512-tNA4/QdCsoLWYAXFF2npAC8DChuGN7lIhsmYDU1UuQtwym3k2Vpy5PVDt7M4WGPsftkvX16CyiGmMmCfcgVgCQ==
+  dependencies:
+    dataloader "^2.2.2"
 
 ethers@^4.0.32:
   version "4.0.49"

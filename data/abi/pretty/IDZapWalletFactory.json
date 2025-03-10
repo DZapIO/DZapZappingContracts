@@ -1,0 +1,11 @@
+[
+  "event WalletDeployed(address indexed user, address indexed wallet, bytes32 indexed salt)",
+  "event WalletImpUpdated(address indexed walletImp)",
+  "function deploy(address _user, string _label) returns (address wallet)",
+  "function getOrDeploy(address _user, string _label) returns (address wallet)",
+  "function getWalletByLabel(address _user, string _label) returns (address)",
+  "function isWalletDeployed(address _wallet) view returns (bool)",
+  "function predict(address _user, string _label) view returns (address)",
+  "function saltToWallet(bytes32 _salt) returns (address)",
+  "function walletToUser(address _user) returns (address)"
+]

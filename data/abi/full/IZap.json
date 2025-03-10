@@ -27,7 +27,20 @@
   },
   {
     "anonymous": false,
-    "inputs": [],
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "defaultReferralNativeFeeShare",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "defaultReferralTokenFeeShare",
+        "type": "uint256"
+      }
+    ],
     "name": "DefaultReferralFeeSet",
     "type": "event"
   },
@@ -163,7 +176,7 @@
       {
         "indexed": true,
         "internalType": "bytes32",
-        "name": "transactionId",
+        "name": "txId",
         "type": "bytes32"
       }
     ],
@@ -366,6 +379,11 @@
         "internalType": "address[]",
         "name": "_sweepDust",
         "type": "address[]"
+      },
+      {
+        "internalType": "address",
+        "name": "_dustReciever",
+        "type": "address"
       }
     ],
     "name": "zap",

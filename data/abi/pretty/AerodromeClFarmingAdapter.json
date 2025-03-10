@@ -1,0 +1,8 @@
+[
+  "error SafeERC20FailedOperation(address token)",
+  "function claim(address _gauge, uint256 _tokenId)",
+  "function claimAndTransfer(address _gauge, address _rewardToken, address _recipient, uint256 _tokenId)",
+  "function deposit(address _gauge, address _token, uint256 _tokenId, uint256 _tokenBalance)",
+  "function withdraw(address _gauge, uint256 _tokenId)",
+  "function withdrawAndTransfer(address _gauge, address _nftToken, address _rewardToken, address _nftRecipient, address _rewardRecipient, uint256 _tokenId)"
+]

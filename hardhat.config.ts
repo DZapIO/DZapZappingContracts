@@ -9,40 +9,98 @@ import 'hardhat-contract-sizer'
 
 import './tasks/accounts'
 import './tasks/clean'
-import { getNetworkConfig, getRpcUrl } from './utils/network'
+
 import { CHAIN_IDS } from './config/networks'
+import './tasks/accounts'
+import './tasks/clean'
+import {
+  getNetworkConfig,
+  getRpcUrl,
+  getVerificationConfig,
+} from './utils/network'
 
 dotenv.config()
 
+const supportedNetworks = [
+  CHAIN_IDS.SEPOLIA_TESTNET,
+  CHAIN_IDS.HOLESKY_TESTNET,
+  CHAIN_IDS.ETH_MAINNET,
+  CHAIN_IDS.ARBITRUM_MAINNET,
+  CHAIN_IDS.OPTIMISM_MAINNET,
+  CHAIN_IDS.ZKSYNC_MAINNET,
+  CHAIN_IDS.BASE_MAINNET,
+  CHAIN_IDS.POLYGON_MAINNET,
+  CHAIN_IDS.BSC_MAINNET,
+  CHAIN_IDS.AVALANCHE_MAINNET,
+  CHAIN_IDS.MANTA_MAINNET,
+  CHAIN_IDS.SCROLL_MAINNET,
+  CHAIN_IDS.LINEA_MAINNET,
+  CHAIN_IDS.MANTLE_MAINNET,
+  CHAIN_IDS.TELOS_MAINNET,
+  CHAIN_IDS.CORE_MAINNET,
+  CHAIN_IDS.ROOTSTOCK_MAINNET,
+  CHAIN_IDS.X_LAYER_MAINNET,
+  CHAIN_IDS.POLYGON_ZK_EVM_MAINNET,
+  CHAIN_IDS.MODE_MAINNET,
+  CHAIN_IDS.METIS_MAINNET,
+  CHAIN_IDS.CELO_MAINNET,
+  CHAIN_IDS.ZETACHAIN_MAINNET,
+  CHAIN_IDS.BLAST_MAINNET,
+  CHAIN_IDS.BOBA_ETH,
+  CHAIN_IDS.FRAXTAL,
+  CHAIN_IDS.GRAVITY,
+  CHAIN_IDS.GNOSIS_MAINNET,
+  CHAIN_IDS.FUSE,
+  CHAIN_IDS.FANTOM_MAINNET,
+  CHAIN_IDS.MOONBEAM_MAINNET,
+  CHAIN_IDS.MOONRIVER,
+  CHAIN_IDS.CRONOS_MAINNET,
+  CHAIN_IDS.KAVA_MAINNET,
+  CHAIN_IDS.KROMA,
+  CHAIN_IDS.AURORA_MAINNET,
+  CHAIN_IDS.MINT,
+  CHAIN_IDS.ARTHERA,
+  CHAIN_IDS.TAIKO_MAINNET,
+  CHAIN_IDS.FIRE_MAINNET,
+]
+
+const networkConfig = getNetworkConfig(supportedNetworks)
+const verificationConfig = getVerificationConfig(supportedNetworks)
+
 const config: HardhatUserConfig = {
   defaultNetwork: 'hardhat',
+  // defaultNetwork: 'zkMainnet',
   networks: {
     hardhat: {
+      accounts: {
+        count: 30,
+      },
       chains: {
         [CHAIN_IDS.BASE_MAINNET]: {
           hardforkHistory: {
             london: 25120000,
           },
         },
+        [CHAIN_IDS.MANTLE_MAINNET]: {
+          hardforkHistory: {
+            london: 76174808,
+          },
+        },
       },
     },
-    ethereum: getNetworkConfig(CHAIN_IDS.ETH_MAINNET),
-    polygon: getNetworkConfig(CHAIN_IDS.POLYGON_MAINNET),
-    blast: getNetworkConfig(CHAIN_IDS.BLAST_MAINNET),
-    bsc: getNetworkConfig(CHAIN_IDS.BSC_MAINNET),
-    arbitrumOne: getNetworkConfig(CHAIN_IDS.ARBITRUM_MAINNET),
-    optimism: getNetworkConfig(CHAIN_IDS.OPTIMISM_MAINNET),
-    avalanche: getNetworkConfig(CHAIN_IDS.AVALANCHE_MAINNET),
-    base: getNetworkConfig(CHAIN_IDS.BASE_MAINNET),
-    manta: getNetworkConfig(CHAIN_IDS.MANTA_MAINNET),
-    scroll: getNetworkConfig(CHAIN_IDS.SCROLL_MAINNET),
-    telos: getNetworkConfig(CHAIN_IDS.TELOS_MAINNET),
-    core: getNetworkConfig(CHAIN_IDS.CORE_MAINNET),
-    rootstock: getNetworkConfig(CHAIN_IDS.ROOTSTOCK_MAINNET),
-    mantle: getNetworkConfig(CHAIN_IDS.MANTLE_MAINNET),
-    linea: getNetworkConfig(CHAIN_IDS.LINEA_MAINNET),
-    xlayer: getNetworkConfig(CHAIN_IDS.X_LAYER_MAINNET),
-    zkSync: getNetworkConfig(CHAIN_IDS.ZKSYNC_MAINNET),
+    ...networkConfig,
+    // zkTestnet: {
+    //   url: getRpcUrl(CHAIN_IDS.ZKSYNC_SEPOLIA_TESTNET),
+    //   ethNetwork: 'sepolia',
+    //   zksync: true,
+    //   deployPaths: 'scripts/deployZkEVM',
+    // },
+    // zkMainnet: {
+    //   url: getRpcUrl(CHAIN_IDS.ZKSYNC_MAINNET),
+    //   ethNetwork: 'mainnet',
+    //   zksync: true,
+    //   deployPaths: 'scripts/deployZkEVM',
+    // },
   },
   solidity: {
     compilers: [
@@ -58,6 +116,16 @@ const config: HardhatUserConfig = {
       },
     ],
   },
+  // zksolc: {
+  //   version: 'latest',
+  //   compilerSource: 'binary',
+  //   settings: {
+  //     optimizer: {
+  //       enabled: true,
+  //       mode: '3',
+  //     },
+  //   },
+  // },
   mocha: {
     timeout: 400000,
   },
@@ -70,7 +138,13 @@ const config: HardhatUserConfig = {
     {
       runOnCompile: true,
       path: 'data/abi/full',
-      only: ['Zap'],
+      only: [
+        'Zap',
+        'DZapRegistry',
+        'DZapWalletFactory',
+        'DZapWallet',
+        'AerodromeClFarmingAdapter',
+      ],
       flat: true,
       clear: true,
     },
@@ -78,49 +152,27 @@ const config: HardhatUserConfig = {
       runOnCompile: true,
       path: 'data/abi/pretty',
       format: 'fullName',
-      only: ['Zap'],
+      only: [
+        'Zap',
+        'DZapRegistry',
+        'DZapWalletFactory',
+        'DZapWallet',
+        'AerodromeClFarmingAdapter',
+      ],
       flat: true,
       clear: true,
     },
   ],
   etherscan: {
-    apiKey: {
-      mainnet: process.env.ETHERSCAN_API_KEY || '',
-      bsc: process.env.BSCSCAN_API_KEY || '',
-      polygon: process.env.POLYGONSCAN_API_KEY || '',
-      arbitrumOne: process.env.ARBITRUM_API_KEY || '',
-      optimisticEthereum: process.env.OPTIMISM_API_KEY || '',
-      base: process.env.BASE_API_KEY || '',
-      scroll: process.env.SCROLL_API_KEY || '',
-      core: process.env.CORE_API_KEY || '',
-    },
-    customChains: [
-      {
-        network: 'base',
-        chainId: 8453,
-        urls: {
-          apiURL: 'https://api.basescan.org/api',
-          browserURL: 'https://basescan.org/',
-        },
-      },
-      {
-        network: 'scroll',
-        chainId: 534352,
-        urls: {
-          apiURL: 'https://api.scrollscan.com/api',
-          browserURL: 'https://scrollscan.com/',
-        },
-      },
-      {
-        network: 'core',
-        chainId: 1116,
-        urls: {
-          apiURL: 'https://openapi.coredao.org/api',
-          browserURL: 'https://scan.coredao.org/',
-        },
-      },
-    ],
+    ...verificationConfig.etherscan,
+    enabled: true,
   },
+  // blockscout: verificationConfig.blockscout,
+  // sourcify: {
+  //   enabled: true,
+  //   // apiUrl: "https://sourcify.dev/server",
+  //   // browserUrl: "https://repo.sourcify.dev",
+  // },
 }
 
 export default config

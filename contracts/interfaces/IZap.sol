@@ -1,18 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 
-import { InputErc20Tokens } from "../../zap/Types.sol";
+import { InputErc20Tokens } from "../zap/Types.sol";
 
 interface IZap {
     // -------------EVENTS-------------
 
-    event DefaultReferralFeeSet();
+    event DefaultReferralFeeSet(uint256 defaultReferralNativeFeeShare, uint256 defaultReferralTokenFeeShare);
     event FeeVaultSet(address indexed feeVault);
     event ZapVerifierSet(address indexed verifier);
     event ReferralAdded(address indexed referral);
     event AdminAdded(address indexed account);
     event AdminRemoved(address indexed account);
-    event Zapped(address indexed user, bytes32 indexed transactionId);
+    event Zapped(address indexed user, bytes32 indexed txId);
     event TokenRecovered(address indexed token, address indexed recipient, uint256 amount);
     event ERC721Recovered(address indexed token, address indexed recipient, uint256 id);
     event ERC1155Recovered(address indexed token, address indexed recipient, uint256[] ids, uint256[] amounts);
@@ -51,6 +51,7 @@ interface IZap {
         bytes calldata _signature,
         address _referral,
         InputErc20Tokens[] calldata _inputTokens,
-        address[] calldata _sweepDust
+        address[] calldata _sweepDust,
+        address _dustReciever
     ) external payable;
 }

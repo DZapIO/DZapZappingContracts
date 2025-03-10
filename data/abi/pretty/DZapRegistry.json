@@ -1,0 +1,13 @@
+[
+  "constructor(address _owner)",
+  "error OwnableInvalidOwner(address owner)",
+  "error OwnableUnauthorizedAccount(address account)",
+  "error ZeroAddress()",
+  "event ExecutorWhitelistingUpdated(address indexed executor, bool isWhitelisted)",
+  "event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)",
+  "function isExecutorWhitelisted(address _executor) view returns (bool)",
+  "function owner() view returns (address)",
+  "function renounceOwnership()",
+  "function setExecutorWhitelisting(address _executor, bool _whitelisted)",
+  "function transferOwnership(address newOwner)"
+]

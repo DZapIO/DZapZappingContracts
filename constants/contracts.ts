@@ -14,6 +14,7 @@ export const CONTRACTS = {
   DZapRegistry: 'DZapRegistry',
   DZapExecutor: 'DZapExecutor',
   AerodromeClFarmingAdapter: 'AerodromeClFarmingAdapter',
+  FluidVaultAdapter: 'FluidVaultAdapter',
   DisperseEthAdapter: 'DisperseEthAdapter',
   MockErc721Staking: 'MockErc721Staking',
 }

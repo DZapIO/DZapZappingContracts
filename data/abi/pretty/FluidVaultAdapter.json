@@ -1,0 +1,3 @@
+[
+  "function depositNewPosition(address _nft, address _vault, address _recipient, int256 _newCol, int256 _newDebt)"
+]

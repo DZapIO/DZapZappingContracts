@@ -1,0 +1,35 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_nft",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_vault",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_recipient",
+        "type": "address"
+      },
+      {
+        "internalType": "int256",
+        "name": "_newCol",
+        "type": "int256"
+      },
+      {
+        "internalType": "int256",
+        "name": "_newDebt",
+        "type": "int256"
+      }
+    ],
+    "name": "depositNewPosition",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]

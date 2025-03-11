@@ -41,10 +41,22 @@ export const DEPLOYMENT_CONFIG = {
 
 export const STAGING_DEPLOYMENT_CONFIG = {
   adapters: {
-    aerodromeClFarmingAdapter: {
+    AerodromeClFarmingAdapter: {
       deployer: '0x12480616436dd6d555f88b8d94bb5156e28825b1',
       saltKey: 'TestDZapAerodromeClFarmingAdapter',
       contractAddress: '0x6E17Bf8a7f42188a9E125E450C2674648a9d3EA5',
+      creationCode: '',
+    },
+    FluidVaultAdapter: {
+      deployer: '0x12480616436dd6d555f88b8d94bb5156e28825b1',
+      saltKey: 'TestDZapFluidVaultAdapter',
+      contractAddress: '0x5838e0C4885710336C312031b401480aD7f6386C',
+      creationCode: '',
+    },
+    DisperseEthAdapter: {
+      deployer: '0x12480616436dd6d555f88b8d94bb5156e28825b1',
+      saltKey: 'TestDZapDisperseEthAdapter',
+      contractAddress: '0xD0b7fe8359D4a5ff76c90B81FF688C3F0Df85f48',
       creationCode: '',
     },
   },
@@ -74,6 +86,8 @@ export const STAGING_DEPLOYMENT_CONFIG = {
   },
   zap: {
     deployer: '0x12480616436dd6d555f88b8d94bb5156e28825b1',
+    // saltKey: 'TestDZapZap1',
+    // contractAddress: '0xe4D0E710dd38C5a9B5A325d5e41664ea89C613d0',
     saltKey: 'TestDZapZap',
     contractAddress: '0x1395A2061894AD483855A40Dec3bf9D7fE949c0D',
     creationCode: '',

@@ -49,8 +49,8 @@ export const STAGING_DEPLOYMENT_CONFIG = {
     },
     FluidVaultAdapter: {
       deployer: '0x12480616436dd6d555f88b8d94bb5156e28825b1',
-      saltKey: 'TestDZapFluidVaultAdapter',
-      contractAddress: '0x5838e0C4885710336C312031b401480aD7f6386C',
+      saltKey: 'TestDZapFluidVaultAdapterV2',
+      contractAddress: '0x9E734dCd9442aA64bA7578e54553d9AeeEB82A5d',
       creationCode: '',
     },
     DisperseEthAdapter: {

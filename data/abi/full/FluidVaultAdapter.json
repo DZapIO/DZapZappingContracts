@@ -27,7 +27,146 @@
         "type": "int256"
       }
     ],
-    "name": "depositNewPosition",
+    "name": "depositNewPositionT1",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_nft",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_vault",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_recipient",
+        "type": "address"
+      },
+      {
+        "internalType": "int256",
+        "name": "newColToken0_",
+        "type": "int256"
+      },
+      {
+        "internalType": "int256",
+        "name": "newColToken1_",
+        "type": "int256"
+      },
+      {
+        "internalType": "int256",
+        "name": "colSharesMinMax_",
+        "type": "int256"
+      },
+      {
+        "internalType": "int256",
+        "name": "newDebt_",
+        "type": "int256"
+      }
+    ],
+    "name": "depositNewPositionT2",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_nft",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_vault",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_recipient",
+        "type": "address"
+      },
+      {
+        "internalType": "int256",
+        "name": "_newCol",
+        "type": "int256"
+      },
+      {
+        "internalType": "int256",
+        "name": "_newDebtToken0",
+        "type": "int256"
+      },
+      {
+        "internalType": "int256",
+        "name": "_newDebtToken1",
+        "type": "int256"
+      },
+      {
+        "internalType": "int256",
+        "name": "_debtSharesMinMax",
+        "type": "int256"
+      }
+    ],
+    "name": "depositNewPositionT3",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_nft",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_vault",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_recipient",
+        "type": "address"
+      },
+      {
+        "internalType": "int256",
+        "name": "_newColToken0",
+        "type": "int256"
+      },
+      {
+        "internalType": "int256",
+        "name": "_newColToken1",
+        "type": "int256"
+      },
+      {
+        "internalType": "int256",
+        "name": "_colSharesMinMax",
+        "type": "int256"
+      },
+      {
+        "internalType": "int256",
+        "name": "_newDebtToken0",
+        "type": "int256"
+      },
+      {
+        "internalType": "int256",
+        "name": "_newDebtToken1",
+        "type": "int256"
+      },
+      {
+        "internalType": "int256",
+        "name": "_debtSharesMinMax",
+        "type": "int256"
+      }
+    ],
+    "name": "depositNewPositionT4",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

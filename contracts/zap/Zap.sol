@@ -428,7 +428,9 @@ contract Zap is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, IZap {
         uint256 _tokenFee,
         uint256 _referralFee
     ) private returns (uint256 totalFeeAmount, uint256 referralFeeAmount) {
-        console.log("====_handleNativeOutput===", uint256(_outputToken.transferType));
+        console.log("====_handleNativeOutput===", _recipient, uint256(_outputToken.transferType));
+        console.log("initialBalance", _initialBalance);
+        console.log("currAmount", LibAsset.getBalance(_outputToken.tokenAddress, _recipient));
 
         uint256 returnAmount = LibAsset.getBalance(_outputToken.tokenAddress, _recipient) - _initialBalance;
         console.log("returnAmount", returnAmount, _outputToken.minReturn, _initialBalance);

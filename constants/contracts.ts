@@ -16,6 +16,7 @@ export const CONTRACTS = {
   AerodromeClFarmingAdapter: 'AerodromeClFarmingAdapter',
   DisperseEthAdapter: 'DisperseEthAdapter',
   MockErc721Staking: 'MockErc721Staking',
+  FluidVaultAdapter: 'FluidVaultAdapter',
 }
 
 export const ERRORS = {

@@ -1,0 +1,194 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_nft",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_vault",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_recipient",
+        "type": "address"
+      },
+      {
+        "internalType": "int256",
+        "name": "_newCol",
+        "type": "int256"
+      },
+      {
+        "internalType": "int256",
+        "name": "_newDebt",
+        "type": "int256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_nativeAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "depositNewPositionT1",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_nft",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_vault",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_recipient",
+        "type": "address"
+      },
+      {
+        "internalType": "int256",
+        "name": "_perfectColShares",
+        "type": "int256"
+      },
+      {
+        "internalType": "int256",
+        "name": "_colToken0MinMax",
+        "type": "int256"
+      },
+      {
+        "internalType": "int256",
+        "name": "_colToken1MinMax",
+        "type": "int256"
+      },
+      {
+        "internalType": "int256",
+        "name": "_newDebt",
+        "type": "int256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_nativeAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "depositNewPositionT2",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_nft",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_vault",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_recipient",
+        "type": "address"
+      },
+      {
+        "internalType": "int256",
+        "name": "_newCol",
+        "type": "int256"
+      },
+      {
+        "internalType": "int256",
+        "name": "_newDebtToken0",
+        "type": "int256"
+      },
+      {
+        "internalType": "int256",
+        "name": "_newDebtToken1",
+        "type": "int256"
+      },
+      {
+        "internalType": "int256",
+        "name": "_debtSharesMinMax",
+        "type": "int256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_nativeAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "depositNewPositionT3",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_nft",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_vault",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_recipient",
+        "type": "address"
+      },
+      {
+        "internalType": "int256",
+        "name": "_perfectColShares",
+        "type": "int256"
+      },
+      {
+        "internalType": "int256",
+        "name": "_colToken0MinMax",
+        "type": "int256"
+      },
+      {
+        "internalType": "int256",
+        "name": "_colToken1MinMax",
+        "type": "int256"
+      },
+      {
+        "internalType": "int256",
+        "name": "_perfectDebtShares",
+        "type": "int256"
+      },
+      {
+        "internalType": "int256",
+        "name": "_debtToken0MinMax",
+        "type": "int256"
+      },
+      {
+        "internalType": "int256",
+        "name": "_debtToken1MinMax",
+        "type": "int256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_nativeAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "depositNewPositionT4",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  }
+]

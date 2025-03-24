@@ -25,11 +25,16 @@
         "internalType": "int256",
         "name": "_newDebt",
         "type": "int256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_nativeAmount",
+        "type": "uint256"
       }
     ],
     "name": "depositNewPositionT1",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -51,28 +56,33 @@
       },
       {
         "internalType": "int256",
-        "name": "newColToken0_",
+        "name": "_perfectColShares",
         "type": "int256"
       },
       {
         "internalType": "int256",
-        "name": "newColToken1_",
+        "name": "_colToken0MinMax",
         "type": "int256"
       },
       {
         "internalType": "int256",
-        "name": "colSharesMinMax_",
+        "name": "_colToken1MinMax",
         "type": "int256"
       },
       {
         "internalType": "int256",
-        "name": "newDebt_",
+        "name": "_newDebt",
         "type": "int256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_nativeAmount",
+        "type": "uint256"
       }
     ],
     "name": "depositNewPositionT2",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -111,11 +121,16 @@
         "internalType": "int256",
         "name": "_debtSharesMinMax",
         "type": "int256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_nativeAmount",
+        "type": "uint256"
       }
     ],
     "name": "depositNewPositionT3",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -137,38 +152,43 @@
       },
       {
         "internalType": "int256",
-        "name": "_newColToken0",
+        "name": "_perfectColShares",
         "type": "int256"
       },
       {
         "internalType": "int256",
-        "name": "_newColToken1",
+        "name": "_colToken0MinMax",
         "type": "int256"
       },
       {
         "internalType": "int256",
-        "name": "_colSharesMinMax",
+        "name": "_colToken1MinMax",
         "type": "int256"
       },
       {
         "internalType": "int256",
-        "name": "_newDebtToken0",
+        "name": "_perfectDebtShares",
         "type": "int256"
       },
       {
         "internalType": "int256",
-        "name": "_newDebtToken1",
+        "name": "_debtToken0MinMax",
         "type": "int256"
       },
       {
         "internalType": "int256",
-        "name": "_debtSharesMinMax",
+        "name": "_debtToken1MinMax",
         "type": "int256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_nativeAmount",
+        "type": "uint256"
       }
     ],
     "name": "depositNewPositionT4",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   }
 ]

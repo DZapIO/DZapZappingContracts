@@ -1,6 +1,6 @@
 [
-  "function depositNewPositionT1(address _nft, address _vault, address _recipient, int256 _newCol, int256 _newDebt)",
-  "function depositNewPositionT2(address _nft, address _vault, address _recipient, int256 newColToken0_, int256 newColToken1_, int256 colSharesMinMax_, int256 newDebt_)",
-  "function depositNewPositionT3(address _nft, address _vault, address _recipient, int256 _newCol, int256 _newDebtToken0, int256 _newDebtToken1, int256 _debtSharesMinMax)",
-  "function depositNewPositionT4(address _nft, address _vault, address _recipient, int256 _newColToken0, int256 _newColToken1, int256 _colSharesMinMax, int256 _newDebtToken0, int256 _newDebtToken1, int256 _debtSharesMinMax)"
+  "function depositNewPositionT1(address _nft, address _vault, address _recipient, int256 _newCol, int256 _newDebt, uint256 _nativeAmount) payable",
+  "function depositNewPositionT2(address _nft, address _vault, address _recipient, int256 _perfectColShares, int256 _colToken0MinMax, int256 _colToken1MinMax, int256 _newDebt, uint256 _nativeAmount) payable",
+  "function depositNewPositionT3(address _nft, address _vault, address _recipient, int256 _newCol, int256 _newDebtToken0, int256 _newDebtToken1, int256 _debtSharesMinMax, uint256 _nativeAmount) payable",
+  "function depositNewPositionT4(address _nft, address _vault, address _recipient, int256 _perfectColShares, int256 _colToken0MinMax, int256 _colToken1MinMax, int256 _perfectDebtShares, int256 _debtToken0MinMax, int256 _debtToken1MinMax, uint256 _nativeAmount) payable"
 ]

@@ -1,3 +1,5 @@
+import { CHAIN_IDS } from '.'
+
 export const DEPLOYMENT_CONFIG = {
   adapters: {
     aerodromeClFarmingAdapter: {
@@ -49,8 +51,8 @@ export const STAGING_DEPLOYMENT_CONFIG = {
     },
     FluidVaultAdapter: {
       deployer: '0x12480616436dd6d555f88b8d94bb5156e28825b1',
-      saltKey: 'TestDZapFluidVaultAdapterV2',
-      contractAddress: '0x9E734dCd9442aA64bA7578e54553d9AeeEB82A5d',
+      saltKey: 'TestDZapFluidVaultAdapter03',
+      contractAddress: '0x718F636a788fc77118fba38262903F8E375F9c19',
       creationCode: '',
     },
     DisperseEthAdapter: {
@@ -92,4 +94,17 @@ export const STAGING_DEPLOYMENT_CONFIG = {
     contractAddress: '0x1395A2061894AD483855A40Dec3bf9D7fE949c0D',
     creationCode: '',
   },
+}
+
+export const ZAP_ADDRESS = {
+  staging: {
+    [CHAIN_IDS.BASE_MAINNET]: '0x1395A2061894AD483855A40Dec3bf9D7fE949c0D',
+    [CHAIN_IDS.ARBITRUM_MAINNET]: '0xe4D0E710dd38C5a9B5A325d5e41664ea89C613d0', // new
+    [CHAIN_IDS.OPTIMISM_MAINNET]: '0x1395A2061894AD483855A40Dec3bf9D7fE949c0D', // new
+    [CHAIN_IDS.POLYGON_MAINNET]: '0x1395A2061894AD483855A40Dec3bf9D7fE949c0D',
+    [CHAIN_IDS.MANTLE_MAINNET]: '0x1395A2061894AD483855A40Dec3bf9D7fE949c0D',
+    [CHAIN_IDS.ETH_MAINNET]: '0x1395A2061894AD483855A40Dec3bf9D7fE949c0D', // new
+    [CHAIN_IDS.AVALANCHE_MAINNET]: '0xe4D0E710dd38C5a9B5A325d5e41664ea89C613d0', // new
+  },
+  production: {},
 }

@@ -21,7 +21,7 @@ export const getAccountKey = (): string => {
       return process.env.STAGING_KEY
     case 'development':
       if (!process.env.DEV_KEY) {
-        throw new Error('TESTNET_KEY is not defined in development environment')
+        throw new Error('DEV_KEY is not defined in development environment')
       }
       return process.env.DEV_KEY || dummyKey
     default:

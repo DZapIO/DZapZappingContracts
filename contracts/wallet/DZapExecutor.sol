@@ -6,17 +6,31 @@ import { Pausable } from "@openzeppelin/contracts/utils/Pausable.sol";
 
 import { LibValidator } from "./../shared/libraries/LibValidator.sol";
 
-import { IDZapWallet } from "../interfaces/IDZapWallet.sol";
 import { IDZapWalletFactory } from "../interfaces/IDZapWalletFactory.sol";
 import { IDZapExecutor } from "../interfaces/IDZapExecutor.sol";
 
-import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-
 import { WalletExecutionCallFailed, ExecutorUnauthorizedAccount, SigDeadlineExpired, WalletNotDeployed, QuorumTooLow } from "./../shared/Errors.sol";
 
-/* 
-    owner : multisig
+/*  
+---------------------------------------------------------
+---------------------------------------------------------
+
+ /$$$$$$$  /$$$$$$$$  /$$$$$$  /$$$$$$$ 
+| $$__  $$|_____ $$  /$$__  $$| $$__  $$
+| $$  \ $$     /$$/ | $$  \ $$| $$  \ $$
+| $$  | $$    /$$/  | $$$$$$$$| $$$$$$$/
+| $$  | $$   /$$/   | $$__  $$| $$____/ 
+| $$  | $$  /$$/    | $$  | $$| $$      
+| $$$$$$$/ /$$$$$$$$| $$  | $$| $$      
+|_______/ |________/|__/  |__/|__/      
+
+
+Author: DZap <https://dzap.io> (https://x.com/dzap_io)
+
+---------------------------------------------------------
+---------------------------------------------------------
 */
+
 contract DZapExecutor is IDZapExecutor, Ownable, Pausable {
     mapping(address executor => bool isWhitelisted) private _executors;
     mapping(address validator => bool isWhitelisted) private _validators;
@@ -75,11 +89,7 @@ contract DZapExecutor is IDZapExecutor, Ownable, Pausable {
         _setValidators(_validatorArr, _whitelisted);
         emit ValidatorWhitelistingUpdated(_validatorArr, _whitelisted);
     }
-
-    /**
-     * Sets the new quorum value
-     * @param _quorum the new quorum value
-     */
+ 
     function setQuorum(uint8 _quorum) external onlyOwner {
         require(_quorum != 0, QuorumTooLow());
         quorum = _quorum;

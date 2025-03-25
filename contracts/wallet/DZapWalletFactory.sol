@@ -9,7 +9,27 @@ import { ZeroAddress, InvalidWalletImp, AlreadyDeployed, AddressIsWallet, NoLabe
 
 import { IDZapWalletFactory } from "../interfaces/IDZapWalletFactory.sol";
 import { IDZapWallet } from "../interfaces/IDZapWallet.sol";
-// to upgrade all the wallets we need to upgrade
+
+/*  
+---------------------------------------------------------
+---------------------------------------------------------
+
+ /$$$$$$$  /$$$$$$$$  /$$$$$$  /$$$$$$$ 
+| $$__  $$|_____ $$  /$$__  $$| $$__  $$
+| $$  \ $$     /$$/ | $$  \ $$| $$  \ $$
+| $$  | $$    /$$/  | $$$$$$$$| $$$$$$$/
+| $$  | $$   /$$/   | $$__  $$| $$____/ 
+| $$  | $$  /$$/    | $$  | $$| $$      
+| $$$$$$$/ /$$$$$$$$| $$  | $$| $$      
+|_______/ |________/|__/  |__/|__/      
+
+
+Author: DZap <https://dzap.io> (https://x.com/dzap_io)
+
+---------------------------------------------------------
+---------------------------------------------------------
+*/
+
 contract DZapWalletFactory is Ownable, Pausable, IDZapWalletFactory {
     // -------------STATE-------------
 

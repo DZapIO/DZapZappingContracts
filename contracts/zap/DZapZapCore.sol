@@ -10,12 +10,32 @@ import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import { LibAsset } from "../shared/libraries/LibAsset.sol";
 import { FullMath } from "../shared/libraries/FullMath.sol";
 
-import { IZap } from "../interfaces/IZap.sol";
+import { IDZapZapCore } from "../interfaces/IDZapZapCore.sol";
 
 import { ZapData, TokenType, InputTransferType, OutputTransferType, InputToken, OutputToken, InputErc20Tokens, ReferralFeeInfo, TokenType } from "./Types.sol";
 import { InvalidFeeVault, CallFailed, InvalidTokenOwner, InvalidReturnAmount, ZeroAddress, InvalidInputLength, InvalidOutputLength, ReferralAlreadyAdded, ReferralAlreadyAdded, InvalidOutputType, NoTransferToNullAddress, UnauthorizedCaller, UnauthorizedSigner } from "../shared/Errors.sol";
 
-contract Zap is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, IZap {
+/*  
+---------------------------------------------------------
+---------------------------------------------------------
+
+ /$$$$$$$  /$$$$$$$$  /$$$$$$  /$$$$$$$ 
+| $$__  $$|_____ $$  /$$__  $$| $$__  $$
+| $$  \ $$     /$$/ | $$  \ $$| $$  \ $$
+| $$  | $$    /$$/  | $$$$$$$$| $$$$$$$/
+| $$  | $$   /$$/   | $$__  $$| $$____/ 
+| $$  | $$  /$$/    | $$  | $$| $$      
+| $$$$$$$/ /$$$$$$$$| $$  | $$| $$      
+|_______/ |________/|__/  |__/|__/      
+
+
+Author: DZap <https://dzap.io> (https://x.com/dzap_io)
+
+---------------------------------------------------------
+---------------------------------------------------------
+*/
+
+contract DZapZapCore is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, IDZapZapCore {
     // -------------STATE-------------
 
     address public feeVault;
@@ -225,8 +245,7 @@ contract Zap is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, IZap {
 
         if (_inputToken.transferType == InputTransferType.ApproveForSpender) LibAsset.approveERC20(_inputToken.tokenAddress, _inputToken.approveTo, amount);
         else if (_inputToken.transferType == InputTransferType.TransferToSpender) LibAsset.transferERC20(_inputToken.tokenAddress, _inputToken.approveTo, amount);
-        // InputTransferType.DirectTransferToSpender, direct transfer is not supported
-
+        
         _transferTokenFee(_inputToken.tokenAddress, _referralAddress, totalFeeAmount, referralFeeAmount);
     }
 
@@ -245,12 +264,9 @@ contract Zap is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, IZap {
         }
 
         uint256 balance = LibAsset.getBalanceOfERC1155(_inputToken.tokenAddress, address(this), _inputToken.tokenId);
-
-        // if there is requirement of extra tokens
         if (balance < _inputToken.amount) LibAsset.transferERC1155(_inputToken.tokenAddress, msg.sender, address(this), _inputToken.tokenId, _inputToken.amount - balance);
 
         if (_inputToken.transferType == InputTransferType.ApproveForSpender) {
-            // remember to make if false after call
             LibAsset.approveERC1155(_inputToken.tokenAddress, _inputToken.approveTo);
         } else if (_inputToken.transferType == InputTransferType.TransferToSpender) LibAsset.transferERC1155(_inputToken.tokenAddress, address(this), _inputToken.approveTo, _inputToken.tokenId, _inputToken.amount);
     }
@@ -272,22 +288,19 @@ contract Zap is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, IZap {
 
     function _handleNativeOutput(OutputToken memory _outputToken, address _recipient, uint256 _initialBalance, uint256 _tokenFee, uint256 _referralFee) private returns (uint256 totalFeeAmount, uint256 referralFeeAmount) {
         uint256 returnAmount = LibAsset.getBalance(_outputToken.tokenAddress, _recipient) - _initialBalance;
-
         require(returnAmount >= _outputToken.minReturn, InvalidReturnAmount(returnAmount, _outputToken.minReturn));
 
         if (_tokenFee != 0) {
             require(_outputToken.transferType != OutputTransferType.DirectTransferToRecipient, InvalidOutputType());
             (totalFeeAmount, referralFeeAmount) = _getTotalAnReferralFeeAmount(returnAmount, _tokenFee, _referralFee);
         }
+        
         uint256 amount = returnAmount - totalFeeAmount;
-
         if (_outputToken.transferType == OutputTransferType.ReceiveAndTransfer) LibAsset.transferNativeToken(_outputToken.recipient, amount);
     }
 
     function _handleERC721Output(OutputToken memory _outputToken, address _recipient) private {
         require(_recipient == LibAsset.getOwnerOfERC721(_outputToken.tokenAddress, _outputToken.tokenId), InvalidTokenOwner(_outputToken.tokenId));
-
-        // OutputTransferType.ReceiveInContract no need add extra check as it will be fail in next step if contract does not have nft
         if (_outputToken.transferType == OutputTransferType.ReceiveAndTransfer) LibAsset.transferERC721(_outputToken.tokenAddress, _outputToken.recipient, _outputToken.tokenId);
     }
 

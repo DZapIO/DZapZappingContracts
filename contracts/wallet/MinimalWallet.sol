@@ -14,7 +14,7 @@ import { ZeroAddress } from "../shared/Errors.sol";
 import { IMinimalWallet } from "../interfaces/IMinimalWallet.sol";
 import { OwnableUnauthorizedAccount, InvalidArrayLength, WithdrawFailed } from "../shared/Errors.sol";
 
-/* From enso base wallet : add git link */
+/* From enso base wallet : https://github.com/EnsoBuild/shortcuts-contracts/blob/a575b19e02139137d1056514112087bb80f8ce96/contracts/wallet/MinimalWallet.sol */
 abstract contract MinimalWallet is ERC721Holder, ERC1155Holder, IMinimalWallet {
     using SafeERC20 for IERC20;
 

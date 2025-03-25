@@ -3,7 +3,7 @@ pragma solidity 0.8.28;
 
 import { InputErc20Tokens } from "../zap/Types.sol";
 
-interface IZap {
+interface IDZapZapCore {
     // -------------EVENTS-------------
 
     event DefaultReferralFeeSet(uint256 defaultReferralNativeFeeShare, uint256 defaultReferralTokenFeeShare);
@@ -19,10 +19,7 @@ interface IZap {
 
     // -------------RESTRICTED-------------
 
-    function setDefaultReferralFee(
-        uint96 _defaultReferralNativeFeeShare,
-        uint96 _defaultReferralTokenFeeShare
-    ) external;
+    function setDefaultReferralFee(uint96 _defaultReferralNativeFeeShare,uint96 _defaultReferralTokenFeeShare) external;
 
     function setFeeVault(address _feeVault) external;
 

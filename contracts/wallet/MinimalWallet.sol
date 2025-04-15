@@ -47,7 +47,7 @@ abstract contract MinimalWallet is ERC721Holder, ERC1155Holder, IMinimalWallet {
         uint256[] memory amounts;
 
         uint256 length = _info.length;
-        for (uint256 i; i < length; ) {
+        for (uint256 i; i < length; ++i) {
             transferInfo = _info[i];
             tokenType = transferInfo.tokenType;
             if (tokenType == TokenType.ETH) {
@@ -81,7 +81,7 @@ abstract contract MinimalWallet is ERC721Holder, ERC1155Holder, IMinimalWallet {
     function withdrawERC20s(IERC20[] calldata erc20s, uint256[] calldata amounts, address[] calldata recipients) external onlyOwner {
         uint256 length = erc20s.length;
         if (amounts.length != length) revert InvalidArrayLength();
-        for (uint256 i; i < length; ) {
+        for (uint256 i; i < length; ++i) {
             require(recipients[i] != address(0), ZeroAddress());
             _withdrawERC20(erc20s[i], amounts[i], recipients[i]);
         }
@@ -92,7 +92,7 @@ abstract contract MinimalWallet is ERC721Holder, ERC1155Holder, IMinimalWallet {
     // @param ids An array of ids that are to be withdrawn
     function withdrawERC721s(IERC721[] calldata erc721s, uint256[] calldata ids, address[] calldata recipients) external onlyOwner {
         uint256 length = ids.length;
-        for (uint256 i; i < length; ) {
+        for (uint256 i; i < length; ++i) {
             _withdrawERC721s(erc721s[i], ids[i], recipients[i]);
         }
     }
@@ -113,7 +113,7 @@ abstract contract MinimalWallet is ERC721Holder, ERC1155Holder, IMinimalWallet {
         TokenType tokenType;
 
         uint256 length = notes.length;
-        for (uint256 i; i < length; ) {
+        for (uint256 i; i < length; ++i) {
             transferInfo = notes[i];
             tokenType = transferInfo.tokenType;
             if (tokenType == TokenType.ERC20) {
@@ -170,31 +170,22 @@ abstract contract MinimalWallet is ERC721Holder, ERC1155Holder, IMinimalWallet {
 
     function _revokeERC20Approvals(IERC20 erc20, address[] memory operators) internal {
         uint256 length = operators.length;
-        for (uint256 i; i < length; ) {
+        for (uint256 i; i < length; ++i) {
             erc20.approve(operators[i], 0);
-            unchecked {
-                ++i;
-            }
         }
     }
 
     function _revokeERC721Approvals(IERC721 erc721, address[] memory operators) internal {
         uint256 length = operators.length;
-        for (uint256 i; i < length; ) {
+        for (uint256 i; i < length; ++i) {
             erc721.setApprovalForAll(operators[i], false);
-            unchecked {
-                ++i;
-            }
         }
     }
 
     function _revokeERC1155Approvals(IERC1155 erc1155, address[] memory operators) internal {
         uint256 length = operators.length;
-        for (uint256 i; i < length; ) {
+        for (uint256 i; i < length; ++i) {
             erc1155.setApprovalForAll(operators[i], false);
-            unchecked {
-                ++i;
-            }
         }
     }
 

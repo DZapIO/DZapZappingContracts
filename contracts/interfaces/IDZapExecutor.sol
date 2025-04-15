@@ -25,6 +25,7 @@ interface IDZapExecutor {
     function execute(
         bytes32 _txId,
         uint256 _deadline,
+        uint256 _nonce,
         address _walletAddress,
         bytes calldata _callData,
         bytes calldata _validatorSignatures
@@ -33,6 +34,7 @@ interface IDZapExecutor {
     function deployWalletAndExecute(
         bytes32 _txId,
         uint256 _deadline,
+        uint256 _nonce,
         address _userAddress,
         string memory _label,
         bytes calldata _callData,

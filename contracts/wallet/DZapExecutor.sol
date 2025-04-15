@@ -9,7 +9,7 @@ import { LibValidator } from "./../shared/libraries/LibValidator.sol";
 import { IDZapWalletFactory } from "../interfaces/IDZapWalletFactory.sol";
 import { IDZapExecutor } from "../interfaces/IDZapExecutor.sol";
 
-import { WalletExecutionCallFailed, ExecutorUnauthorizedAccount, SigDeadlineExpired, WalletNotDeployed, QuorumTooLow } from "./../shared/Errors.sol";
+import { WalletExecutionCallFailed, ExecutorUnauthorizedAccount, SigDeadlineExpired, WalletNotDeployed, QuorumTooLow, NonceAlreadyProcessed } from "./../shared/Errors.sol";
 
 /*  
 ---------------------------------------------------------
@@ -32,15 +32,16 @@ Author: DZap <https://dzap.io> (https://x.com/dzap_io)
 */
 
 contract DZapExecutor is IDZapExecutor, Ownable, Pausable {
+    mapping(uint256 nonce => bool isUsed) public nonces;
     mapping(address executor => bool isWhitelisted) private _executors;
     mapping(address validator => bool isWhitelisted) private _validators;
     uint8 public quorum;
-
+    uint8 public immutable MIN_QUORUM = 2;
     IDZapWalletFactory public immutable DZAP_FACTORY;
 
     bytes32 private _DOMAIN_SEPARATOR;
     bytes32 private constant _DOMAIN_TYPEHASH = keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
-    bytes32 private constant _VALIDATOR_SIGNED_DATA_TYPEHASH = keccak256("SignedValidatorData(bytes32 txId,address executor,address wallet,uint256 deadline,bytes32 data)");
+    bytes32 private constant _VALIDATOR_SIGNED_DATA_TYPEHASH = keccak256("SignedValidatorData(bytes32 txId,address executor,address wallet,uint256 deadline,uint256 nonce,bytes32 data)");
 
     // -------------MODIFIERS-------------
 
@@ -53,7 +54,7 @@ contract DZapExecutor is IDZapExecutor, Ownable, Pausable {
 
     constructor(address _newOwner, address _dZapFactory, uint8 _quorum, address[] memory _executorsToAdd, address[] memory _validatorsToAdd) Ownable(_newOwner) {
         _DOMAIN_SEPARATOR = keccak256(abi.encode(_DOMAIN_TYPEHASH, keccak256(bytes("DZapExecutor")), keccak256(bytes("1")), block.chainid, address(this)));
-        require(_quorum > 0, QuorumTooLow());
+        require(_quorum >= MIN_QUORUM, QuorumTooLow());
         DZAP_FACTORY = IDZapWalletFactory(_dZapFactory);
         quorum = _quorum;
         _setExecutors(_executorsToAdd, true);
@@ -91,7 +92,7 @@ contract DZapExecutor is IDZapExecutor, Ownable, Pausable {
     }
  
     function setQuorum(uint8 _quorum) external onlyOwner {
-        require(_quorum != 0, QuorumTooLow());
+        require(_quorum >= MIN_QUORUM, QuorumTooLow());
         quorum = _quorum;
 
         emit QuorumUpdated(_quorum);
@@ -102,19 +103,19 @@ contract DZapExecutor is IDZapExecutor, Ownable, Pausable {
     /* 
         if wallet is not deployed then deploy the wallet
         verify callData and call execute
-        wallet can update executor
+        wallet can update executor 
      */
-    function execute(bytes32 _txId, uint256 _deadline, address _walletAddress, bytes calldata _callData, bytes calldata _validatorSignatures) external payable onlyAuthorizedExecutor whenNotPaused {
+    function execute(bytes32 _txId, uint256 _deadline, uint256 _nonce, address _walletAddress, bytes calldata _callData, bytes calldata _validatorSignatures) external payable onlyAuthorizedExecutor whenNotPaused {
         require(DZAP_FACTORY.isWalletDeployed(_walletAddress), WalletNotDeployed());
-        _verify(_txId, _walletAddress, _deadline, _callData, _validatorSignatures);
+        _verify(_txId, _walletAddress, _deadline, _nonce, _callData, _validatorSignatures);
         (bool success, bytes memory res) = _walletAddress.call{ value: msg.value }(_callData);
         require(success, WalletExecutionCallFailed(res));
         emit Executed(_txId, _walletAddress);
     }
 
-    function deployWalletAndExecute(bytes32 _txId, uint256 _deadline, address _userAddress, string memory _label, bytes calldata _callData, bytes calldata _validatorSignatures) external payable onlyAuthorizedExecutor whenNotPaused {
+    function deployWalletAndExecute(bytes32 _txId, uint256 _deadline, uint256 _nonce, address _userAddress, string memory _label, bytes calldata _callData, bytes calldata _validatorSignatures) external payable onlyAuthorizedExecutor whenNotPaused {
         address walletAddress = DZAP_FACTORY.deploy(_userAddress, _label);
-        _verify(_txId, walletAddress, _deadline, _callData, _validatorSignatures);
+        _verify(_txId, walletAddress, _deadline, _nonce, _callData, _validatorSignatures);
         (bool success, bytes memory res) = walletAddress.call{ value: msg.value }(_callData);
         require(success, WalletExecutionCallFailed(res));
         emit DeployAndExecuted(_txId, _userAddress, walletAddress);
@@ -122,11 +123,14 @@ contract DZapExecutor is IDZapExecutor, Ownable, Pausable {
 
     // -------------EXTERNAL-------------
 
-    function _verify(bytes32 _txId, address _walletAddress, uint256 _deadline, bytes calldata _data, bytes calldata _validatorSignatures) private view {
+    function _verify(bytes32 _txId,  address _walletAddress, uint256 _deadline, uint256 _nonce, bytes calldata _data, bytes calldata _validatorSignatures) private {
         require(_deadline >= block.timestamp, SigDeadlineExpired());
-        bytes32 msgHash = keccak256(abi.encode(_VALIDATOR_SIGNED_DATA_TYPEHASH, _txId, msg.sender, _walletAddress, _deadline, keccak256(_data)));
+        require(!nonces[_nonce], NonceAlreadyProcessed());
+        bytes32 msgHash = keccak256(abi.encode(_VALIDATOR_SIGNED_DATA_TYPEHASH, _txId, msg.sender, _walletAddress, _deadline, _nonce, keccak256(_data)));
         bytes32 digest = keccak256(abi.encodePacked("\x19\x01", _DOMAIN_SEPARATOR, msgHash));
         LibValidator.verifyValidatorSigs(_validators, _validatorSignatures, digest, quorum);
+
+        nonces[_nonce] = true;
     }
 
     function _setExecutors(address[] memory _executorsArr, bool _whitelisted) private {

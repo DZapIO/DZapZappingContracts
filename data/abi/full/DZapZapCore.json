@@ -80,6 +80,11 @@
   },
   {
     "inputs": [],
+    "name": "FeeTooHigh",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "InvalidAmount",
     "type": "error"
   },
@@ -101,11 +106,6 @@
   {
     "inputs": [],
     "name": "InvalidOutputType",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "InvalidPermit",
     "type": "error"
   },
   {
@@ -217,6 +217,11 @@
       }
     ],
     "name": "SafeERC20FailedOperation",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "SenderCannotBeReferral",
     "type": "error"
   },
   {

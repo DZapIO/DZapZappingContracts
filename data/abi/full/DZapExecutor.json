@@ -84,6 +84,11 @@
     "type": "error"
   },
   {
+    "inputs": [],
+    "name": "NonceAlreadyProcessed",
+    "type": "error"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -311,6 +316,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "MIN_QUORUM",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "bytes32",
@@ -320,6 +338,11 @@
       {
         "internalType": "uint256",
         "name": "_deadline",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_nonce",
         "type": "uint256"
       },
       {
@@ -358,6 +381,11 @@
       {
         "internalType": "uint256",
         "name": "_deadline",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_nonce",
         "type": "uint256"
       },
       {
@@ -413,6 +441,25 @@
       {
         "internalType": "bool",
         "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "nonce",
+        "type": "uint256"
+      }
+    ],
+    "name": "nonces",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "isUsed",
         "type": "bool"
       }
     ],

@@ -13,7 +13,7 @@ import { FullMath } from "../shared/libraries/FullMath.sol";
 import { IDZapZapCore } from "../interfaces/IDZapZapCore.sol";
 
 import { ZapData, TokenType, InputTransferType, OutputTransferType, InputToken, OutputToken, InputErc20Tokens, ReferralFeeInfo, TokenType } from "./Types.sol";
-import { InvalidFeeVault, CallFailed, InvalidTokenOwner, InvalidReturnAmount, ZeroAddress, InvalidInputLength, InvalidOutputLength, ReferralAlreadyAdded, ReferralAlreadyAdded, InvalidOutputType, NoTransferToNullAddress, UnauthorizedCaller, UnauthorizedSigner } from "../shared/Errors.sol";
+import { InvalidFeeVault, CallFailed, InvalidTokenOwner, InvalidReturnAmount, ZeroAddress, InvalidInputLength, InvalidOutputLength, ReferralAlreadyAdded, InvalidOutputType, NoTransferToNullAddress, UnauthorizedCaller, UnauthorizedSigner, FeeTooHigh, SenderCannotBeReferral } from "../shared/Errors.sol";
 
 /*  
 ---------------------------------------------------------
@@ -73,6 +73,7 @@ contract DZapZapCore is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, I
     constructor(address _owner, address _feeVault, address _verifier, address _permit2, uint96 _defaultReferralNativeFeeShare, uint96 _defaultReferralTokenFeeShare, bytes32 _salt) Ownable(_owner) {
         require(_verifier != address(0) && _permit2 != address(0), ZeroAddress());
         require(_feeVault != address(0) && _feeVault != address(this), InvalidFeeVault());
+        require(_defaultReferralNativeFeeShare < _BPS_DENOMINATOR && _defaultReferralTokenFeeShare < _BPS_DENOMINATOR, FeeTooHigh());
 
         feeVault = _feeVault;
         permit2 = _permit2;
@@ -85,6 +86,7 @@ contract DZapZapCore is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, I
     // -------------RESTRICTED-------------
 
     function setDefaultReferralFee(uint96 _defaultReferralNativeFeeShare, uint96 _defaultReferralTokenFeeShare) external onlyOwner {
+        require(_defaultReferralNativeFeeShare < _BPS_DENOMINATOR && _defaultReferralTokenFeeShare < _BPS_DENOMINATOR, FeeTooHigh());
         defaultReferralNativeFeeShare = _defaultReferralNativeFeeShare;
         defaultReferralTokenFeeShare = _defaultReferralTokenFeeShare;
         emit DefaultReferralFeeSet(_defaultReferralNativeFeeShare, _defaultReferralTokenFeeShare);
@@ -114,6 +116,7 @@ contract DZapZapCore is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, I
 
     function addReferral(address _referral, uint96 _nativeFeeShare, uint96 _tokenFeeShare) external onlyOwnerOrAdmin {
         require(_referral != address(0), ZeroAddress());
+        require(_nativeFeeShare < _BPS_DENOMINATOR && _tokenFeeShare < _BPS_DENOMINATOR, FeeTooHigh());
         referralFeeInfo[_referral] = ReferralFeeInfo({ nativeFeeShare: _nativeFeeShare, tokenFeeShare: _tokenFeeShare });
         emit ReferralAdded(_referral);
     }
@@ -348,6 +351,7 @@ contract DZapZapCore is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, I
     // -------------PRIVATE-------------
 
     function _handleVerification(bytes32 _transactionId, address _referral, bytes calldata _data, bytes calldata _signature) private {
+        require(msg.sender != _referral, SenderCannotBeReferral());
         bytes32 msgHash = keccak256(abi.encode(_SIGNED_DATA_TYPEHASH, _transactionId, msg.sender, _referral, nonce[msg.sender], keccak256(_data)));
         _verifySignature(_signature, msgHash);
         ++nonce[msg.sender];
@@ -357,7 +361,7 @@ contract DZapZapCore is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, I
         uint256 length = _inputTokens.length;
 
         for (uint256 i; i < length; ++i) {
-            LibAsset.depositErc20(permit2, _inputTokens[i].token, msg.sender, address(this), _inputTokens[i].amount, _inputTokens[i].permit);
+            LibAsset.depositErc20(permit2, _inputTokens[i].token, msg.sender, _inputTokens[i].amount, _inputTokens[i].permit);
         }
     }
 

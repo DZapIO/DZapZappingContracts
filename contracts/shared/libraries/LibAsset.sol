@@ -108,13 +108,13 @@ library LibAsset {
         IERC1155(_token).setApprovalForAll(_spender, false);
     }
 
-    function depositErc20(address _permit2, address _token, address _from, address _to, uint256 _amount, bytes memory permit_) internal {
+    function depositErc20(address _permit2, address _token, address _from, uint256 _amount, bytes memory permit_) internal {
         (PermitType permitType, bytes memory data) = abi.decode(permit_, (PermitType, bytes));
 
-        if (permitType == PermitType.PERMIT2) LibPermit.permit2ApproveAndTransfer(_permit2, _from, _to, uint160(_amount), _token, data);
+        if (permitType == PermitType.PERMIT2) LibPermit.permit2ApproveAndTransfer(_permit2, _from, address(this), uint160(_amount), _token, data);
         else {
-            if (data.length != 0) LibPermit.permit(_token, data);
-            transferFromERC20(_token, _from, _to, _amount);
+            if (data.length != 0) LibPermit.permit(_token, _from, address(this), _amount, data);
+            transferFromERC20(_token, _from, address(this), _amount);
         }
     }
 }

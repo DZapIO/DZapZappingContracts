@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 
-import { Initializable } from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
-import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import { Initializable } from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import { ReentrancyGuardUpgradeable } from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 
 import { MinimalWallet } from "../wallet/MinimalWallet.sol";
 
@@ -32,7 +31,7 @@ Author: DZap <https://dzap.io> (https://x.com/dzap_io)
 ---------------------------------------------------------
 */
 
-contract DZapWallet is Initializable, MinimalWallet, ReentrancyGuard, IDZapWallet {
+contract DZapWallet is Initializable, MinimalWallet, ReentrancyGuardUpgradeable, IDZapWallet {
     // -------------STATE-------------
 
     IDZapRegistry public immutable DZAP_REGISTRY;
@@ -53,6 +52,7 @@ contract DZapWallet is Initializable, MinimalWallet, ReentrancyGuard, IDZapWalle
 
     function initialize(address _user) public initializer {
         _setOwner(_user);
+        __ReentrancyGuard_init();
     }
 
     // -------------EXTERNAL-------------

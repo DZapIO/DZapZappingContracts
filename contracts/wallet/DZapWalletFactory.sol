@@ -49,6 +49,7 @@ contract DZapWalletFactory is Ownable, Pausable, IDZapWalletFactory {
     // -------------VIEW-------------
 
     function getWalletByLabel(address _user, string memory _label) external view returns (address wallet) {
+        if (bytes(_label).length == 0) revert NoLabel();
         return saltToWallet[_createSalt(_user, _label)];
     }
 

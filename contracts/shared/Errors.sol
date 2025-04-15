@@ -37,6 +37,7 @@ error QuorumTooLow();
 
 // ----------ZAP----------
 
+error FeeTooHigh();
 error InvalidFeeVault();
 error InvalidInputLength();
 error InvalidOutputLength();
@@ -44,3 +45,4 @@ error ReferralAlreadyAdded();
 error InvalidOutputType();
 error InvalidReferral();
 error UnauthorizedSigner();
+error SenderCannotBeReferral();

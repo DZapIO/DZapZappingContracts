@@ -223,8 +223,8 @@ export const NETWORKS: Networks = {
     chainName: 'Polygon Mainnet',
     shortName: 'polygon',
     rpcUrl: [
-      'https://polygon-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}',
       'https://polygon-rpc.com/',
+      'https://polygon-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}',
       'https://rpc-mainnet.matic.network',
       'https://matic-mainnet.chainstacklabs.com',
       'https://rpc-mainnet.maticvigil.com',

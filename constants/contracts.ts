@@ -8,7 +8,7 @@ export const CONTRACTS = {
   MockErc1155Dex: 'MockErc1155Dex',
   WNATIVE: 'WNATIVE',
   Permit2: 'Permit2',
-  Zap: 'Zap',
+  DZapZapCore: 'DZapZapCore',
   DZapWallet: 'DZapWallet',
   DZapWalletFactory: 'DZapWalletFactory',
   DZapRegistry: 'DZapRegistry',

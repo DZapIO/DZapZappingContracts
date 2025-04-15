@@ -86,6 +86,11 @@ const config: HardhatUserConfig = {
             london: 76174808,
           },
         },
+        [CHAIN_IDS.POLYGON_MAINNET]: {
+          hardforkHistory: {
+            london: 69805539,
+          },
+        },
       },
     },
     ...networkConfig,
@@ -139,10 +144,11 @@ const config: HardhatUserConfig = {
       runOnCompile: true,
       path: 'data/abi/full',
       only: [
-        'Zap',
+        'DZapZapCore',
         'DZapRegistry',
         'DZapWalletFactory',
         'DZapWallet',
+        'DZapExecutor',
         'AerodromeClFarmingAdapter',
         'FluidVaultAdapter',
       ],
@@ -154,10 +160,11 @@ const config: HardhatUserConfig = {
       path: 'data/abi/pretty',
       format: 'fullName',
       only: [
-        'Zap',
+        'DZapZapCore',
         'DZapRegistry',
         'DZapWalletFactory',
         'DZapWallet',
+        'DZapExecutor',
         'AerodromeClFarmingAdapter',
         'FluidVaultAdapter',
       ],

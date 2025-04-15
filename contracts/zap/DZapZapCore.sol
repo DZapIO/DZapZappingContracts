@@ -10,13 +10,13 @@ import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import { LibAsset } from "../shared/libraries/LibAsset.sol";
 import { FullMath } from "../shared/libraries/FullMath.sol";
 
-import { IZap } from "../interfaces/IZap.sol";
+import { IDZapZapCore } from "../interfaces/IDZapZapCore.sol";
 
 import { ZapData, TokenType, InputTransferType, OutputTransferType, InputToken, OutputToken, InputErc20Tokens, ReferralFeeInfo, TokenType } from "./Types.sol";
 import { InvalidFeeVault, CallFailed, InvalidTokenOwner, InvalidReturnAmount, ZeroAddress, InvalidInputLength, InvalidOutputLength, ReferralAlreadyAdded, ReferralAlreadyAdded, InvalidOutputType, NoTransferToNullAddress, UnauthorizedCaller, UnauthorizedSigner } from "../shared/Errors.sol";
 import "hardhat/console.sol";
 
-contract Zap is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, IZap {
+contract DZapZapCore is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, IDZapZapCore {
     // -------------STATE-------------
 
     address public feeVault;

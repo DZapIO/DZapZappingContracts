@@ -5,7 +5,7 @@ pragma solidity 0.8.28;
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
 import { IDZapRegistry } from "../interfaces/IDZapRegistry.sol";
-import { ZeroAddress } from "./Errors.sol";
+import { ZeroAddress } from "../shared/Errors.sol";
 import "hardhat/console.sol";
 
 contract DZapRegistry is Ownable, IDZapRegistry {

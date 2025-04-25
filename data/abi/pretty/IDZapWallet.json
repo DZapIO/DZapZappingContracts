@@ -1,6 +1,5 @@
 [
   "event Executed(bytes32 indexed txId)",
-  "function execute(bytes32 _txId, address[] _callTo, bytes[] _callData, uint256[] _nativeValue, bool[] _isDelegateCall) payable",
-  "function executeByExecutor(bytes32 _txId, address[] _callTo, bytes[] _callData, uint256[] _nativeValue, bool[] _isDelegateCall) payable",
+  "function execute(bytes32 _txId, uint256 _deadline, uint256 _nonce, bytes _data, bytes _validatorSignatures) payable",
   "function initialize(address _user)"
 ]

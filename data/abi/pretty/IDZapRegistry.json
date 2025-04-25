@@ -1,4 +1,0 @@
-[
-  "function isExecutorWhitelisted(address _executor) view returns (bool)",
-  "function setExecutorWhitelisting(address _executor, bool _whitelisted)"
-]

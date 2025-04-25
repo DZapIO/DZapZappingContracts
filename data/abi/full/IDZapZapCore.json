@@ -30,6 +30,25 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "address[]",
+        "name": "callTo",
+        "type": "address[]"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "isWhitelisted",
+        "type": "bool"
+      }
+    ],
+    "name": "CallsWhitelistingUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "uint256",
         "name": "defaultReferralNativeFeeShare",
         "type": "uint256"

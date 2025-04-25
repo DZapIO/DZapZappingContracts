@@ -12,50 +12,13 @@
         "type": "address"
       },
       {
-        "internalType": "uint8",
-        "name": "_quorum",
-        "type": "uint8"
-      },
-      {
         "internalType": "address[]",
         "name": "_executorsToAdd",
-        "type": "address[]"
-      },
-      {
-        "internalType": "address[]",
-        "name": "_validatorsToAdd",
         "type": "address[]"
       }
     ],
     "stateMutability": "nonpayable",
     "type": "constructor"
-  },
-  {
-    "inputs": [],
-    "name": "ECDSAInvalidSignature",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "length",
-        "type": "uint256"
-      }
-    ],
-    "name": "ECDSAInvalidSignatureLength",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "s",
-        "type": "bytes32"
-      }
-    ],
-    "name": "ECDSAInvalidSignatureS",
-    "type": "error"
   },
   {
     "inputs": [],
@@ -79,32 +42,6 @@
     "type": "error"
   },
   {
-    "inputs": [],
-    "name": "InvalidSignatureLength",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "NonceAlreadyProcessed",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "NotAValidator",
-    "type": "error"
-  },
-  {
     "inputs": [
       {
         "internalType": "address",
@@ -124,37 +61,6 @@
       }
     ],
     "name": "OwnableUnauthorizedAccount",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "QuorumNotReached",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "QuorumTooLow",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "SigDeadlineExpired",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "SignatureAlreadyProcessed",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes",
-        "name": "",
-        "type": "bytes"
-      }
-    ],
-    "name": "WalletExecutionCallFailed",
     "type": "error"
   },
   {
@@ -262,44 +168,12 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "uint8",
-        "name": "quorum_",
-        "type": "uint8"
-      }
-    ],
-    "name": "QuorumUpdated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
         "internalType": "address",
         "name": "account",
         "type": "address"
       }
     ],
     "name": "Unpaused",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address[]",
-        "name": "validators",
-        "type": "address[]"
-      },
-      {
-        "indexed": false,
-        "internalType": "bool",
-        "name": "isWhitelisted",
-        "type": "bool"
-      }
-    ],
-    "name": "ValidatorWhitelistingUpdated",
     "type": "event"
   },
   {
@@ -310,19 +184,6 @@
         "internalType": "contract IDZapWalletFactory",
         "name": "",
         "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "MIN_QUORUM",
-    "outputs": [
-      {
-        "internalType": "uint8",
-        "name": "",
-        "type": "uint8"
       }
     ],
     "stateMutability": "view",
@@ -429,44 +290,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_validator",
-        "type": "address"
-      }
-    ],
-    "name": "isValidatorWhitelisted",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "nonce",
-        "type": "uint256"
-      }
-    ],
-    "name": "nonces",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "isUsed",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "owner",
     "outputs": [
@@ -501,19 +324,6 @@
   },
   {
     "inputs": [],
-    "name": "quorum",
-    "outputs": [
-      {
-        "internalType": "uint8",
-        "name": "",
-        "type": "uint8"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "renounceOwnership",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -533,37 +343,6 @@
       }
     ],
     "name": "setExecutorWhitelisting",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint8",
-        "name": "_quorum",
-        "type": "uint8"
-      }
-    ],
-    "name": "setQuorum",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address[]",
-        "name": "_validatorArr",
-        "type": "address[]"
-      },
-      {
-        "internalType": "bool",
-        "name": "_whitelisted",
-        "type": "bool"
-      }
-    ],
-    "name": "setValidatorWhitelisting",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

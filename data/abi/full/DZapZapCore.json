@@ -225,6 +225,17 @@
     "type": "error"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "callTo",
+        "type": "address"
+      }
+    ],
+    "name": "UnauthorizedCall",
+    "type": "error"
+  },
+  {
     "inputs": [],
     "name": "UnauthorizedCaller",
     "type": "error"
@@ -263,6 +274,25 @@
       }
     ],
     "name": "AdminRemoved",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address[]",
+        "name": "callTo",
+        "type": "address[]"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "isWhitelisted",
+        "type": "bool"
+      }
+    ],
+    "name": "CallsWhitelistingUpdated",
     "type": "event"
   },
   {
@@ -491,6 +521,25 @@
       {
         "internalType": "bool",
         "name": "isAdmin",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "callTo",
+        "type": "address"
+      }
+    ],
+    "name": "allowedCalls",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "isWhitelisted",
         "type": "bool"
       }
     ],
@@ -814,6 +863,24 @@
   {
     "inputs": [],
     "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "_callTos",
+        "type": "address[]"
+      },
+      {
+        "internalType": "bool",
+        "name": "_whitelisted",
+        "type": "bool"
+      }
+    ],
+    "name": "setCallsWhitelisting",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

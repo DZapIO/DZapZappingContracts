@@ -3,7 +3,7 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_dzapRegistry",
+        "name": "_dZapWalletManager",
         "type": "address"
       }
     ],
@@ -22,17 +22,6 @@
     "type": "error"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "ExecutorUnauthorizedAccount",
-    "type": "error"
-  },
-  {
     "inputs": [],
     "name": "InvalidAccount",
     "type": "error"
@@ -45,6 +34,11 @@
   {
     "inputs": [],
     "name": "InvalidInitialization",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NonceAlreadyProcessed",
     "type": "error"
   },
   {
@@ -77,6 +71,32 @@
       }
     ],
     "name": "SafeERC20FailedOperation",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "SigDeadlineExpired",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "callTo",
+        "type": "address"
+      }
+    ],
+    "name": "UnauthorizedCall",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "UnauthorizedCaller",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "WalletIsPaused",
     "type": "error"
   },
   {
@@ -117,10 +137,10 @@
   },
   {
     "inputs": [],
-    "name": "DZAP_REGISTRY",
+    "name": "DZAP_WALLET_MANAGER",
     "outputs": [
       {
-        "internalType": "contract IDZapRegistry",
+        "internalType": "contract IDZapWalletManager",
         "name": "",
         "type": "address"
       }
@@ -136,60 +156,27 @@
         "type": "bytes32"
       },
       {
-        "internalType": "address[]",
-        "name": "_callTo",
-        "type": "address[]"
+        "internalType": "uint256",
+        "name": "_deadline",
+        "type": "uint256"
       },
       {
-        "internalType": "bytes[]",
-        "name": "_callData",
-        "type": "bytes[]"
+        "internalType": "uint256",
+        "name": "_nonce",
+        "type": "uint256"
       },
       {
-        "internalType": "uint256[]",
-        "name": "_nativeValue",
-        "type": "uint256[]"
+        "internalType": "bytes",
+        "name": "_data",
+        "type": "bytes"
       },
       {
-        "internalType": "bool[]",
-        "name": "_isDelegateCall",
-        "type": "bool[]"
+        "internalType": "bytes",
+        "name": "_validatorSignatures",
+        "type": "bytes"
       }
     ],
     "name": "execute",
-    "outputs": [],
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "_txId",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "address[]",
-        "name": "_callTo",
-        "type": "address[]"
-      },
-      {
-        "internalType": "bytes[]",
-        "name": "_callData",
-        "type": "bytes[]"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "_nativeValue",
-        "type": "uint256[]"
-      },
-      {
-        "internalType": "bool[]",
-        "name": "_isDelegateCall",
-        "type": "bool[]"
-      }
-    ],
-    "name": "executeByExecutor",
     "outputs": [],
     "stateMutability": "payable",
     "type": "function"
@@ -205,6 +192,25 @@
     "name": "initialize",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "nonce",
+        "type": "uint256"
+      }
+    ],
+    "name": "nonces",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "isUsed",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {

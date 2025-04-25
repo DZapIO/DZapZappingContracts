@@ -1,0 +1,8 @@
+[
+  "function isCallWhitelisted(address _callTo) view returns (bool)",
+  "function isExecutorWhitelisted(address _executor) view returns (bool)",
+  "function quorum() view returns (uint8)",
+  "function setExecutorWhitelisting(address _executor, bool _whitelisted)",
+  "function verify(bytes _signatures, bytes32 _hash) view",
+  "function walletPaused() view returns (bool)"
+]

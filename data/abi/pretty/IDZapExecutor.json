@@ -2,15 +2,10 @@
   "event DeployAndExecuted(bytes32 indexed txId, address indexed userAddress, address indexed walletAddress)",
   "event Executed(bytes32 indexed txId, address indexed walletAddress)",
   "event ExecutorWhitelistingUpdated(address[] executors, bool isWhitelisted)",
-  "event QuorumUpdated(uint8 quorum_)",
-  "event ValidatorWhitelistingUpdated(address[] validators, bool isWhitelisted)",
   "function deployWalletAndExecute(bytes32 _txId, uint256 _deadline, uint256 _nonce, address _userAddress, string _label, bytes _callData, bytes _validatorSignatures) payable",
   "function execute(bytes32 _txId, uint256 _deadline, uint256 _nonce, address _walletAddress, bytes _callData, bytes _validatorSignatures) payable",
   "function isExecutorWhitelisted(address _executor) view returns (bool)",
-  "function isValidatorWhitelisted(address _validator) view returns (bool)",
   "function pause()",
   "function setExecutorWhitelisting(address[] _executorsArr, bool _whitelisted)",
-  "function setQuorum(uint8 _quorum)",
-  "function setValidatorWhitelisting(address[] _validatorArr, bool _whitelisted)",
   "function unpause()"
 ]

@@ -1,6 +1,7 @@
 [
   "event AdminAdded(address indexed account)",
   "event AdminRemoved(address indexed account)",
+  "event CallsWhitelistingUpdated(address[] callTo, bool isWhitelisted)",
   "event DefaultReferralFeeSet(uint256 defaultReferralNativeFeeShare, uint256 defaultReferralTokenFeeShare)",
   "event ERC1155Recovered(address indexed token, address indexed recipient, uint256[] ids, uint256[] amounts)",
   "event ERC721Recovered(address indexed token, address indexed recipient, uint256 id)",

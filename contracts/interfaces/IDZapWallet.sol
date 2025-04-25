@@ -10,19 +10,5 @@ interface IDZapWallet {
 
     function initialize(address _user) external;
 
-    function executeByExecutor(
-        bytes32 _txId,
-        address[] calldata _callTo,
-        bytes[] calldata _callData,
-        uint256[] calldata _nativeValue,
-        bool[] calldata _isDelegateCall
-    ) external payable;
-
-    function execute(
-        bytes32 _txId,
-        address[] calldata _callTo,
-        bytes[] calldata _callData,
-        uint256[] calldata _nativeValue,
-        bool[] calldata _isDelegateCall
-    ) external payable;
+    function execute(bytes32 _txId, uint256 _deadline, uint256 _nonce, bytes calldata _data, bytes calldata _validatorSignatures) external payable;
 }

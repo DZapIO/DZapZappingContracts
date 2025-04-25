@@ -16,6 +16,7 @@ interface IDZapZapCore {
     event TokenRecovered(address indexed token, address indexed recipient, uint256 amount);
     event ERC721Recovered(address indexed token, address indexed recipient, uint256 id);
     event ERC1155Recovered(address indexed token, address indexed recipient, uint256[] ids, uint256[] amounts);
+    event CallsWhitelistingUpdated(address[] callTo, bool isWhitelisted);
 
     // -------------RESTRICTED-------------
 

@@ -34,6 +34,8 @@ error OwnableUnauthorizedAccount(address);
 error WithdrawFailed();
 error InvalidArrayLength();
 error QuorumTooLow();
+error WalletIsPaused();
+error UnauthorizedCall(address callTo);
 
 // ----------ZAP----------
 

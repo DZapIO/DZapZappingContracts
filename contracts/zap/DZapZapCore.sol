@@ -13,7 +13,7 @@ import { FullMath } from "../shared/libraries/FullMath.sol";
 import { IDZapZapCore } from "../interfaces/IDZapZapCore.sol";
 
 import { ZapData, TokenType, InputTransferType, OutputTransferType, InputToken, OutputToken, InputErc20Tokens, ReferralFeeInfo, TokenType } from "./Types.sol";
-import { InvalidFeeVault, CallFailed, InvalidTokenOwner, InvalidReturnAmount, ZeroAddress, InvalidInputLength, InvalidOutputLength, ReferralAlreadyAdded, InvalidOutputType, NoTransferToNullAddress, UnauthorizedCaller, UnauthorizedSigner, FeeTooHigh, SenderCannotBeReferral } from "../shared/Errors.sol";
+import { InvalidFeeVault, CallFailed, InvalidTokenOwner, InvalidReturnAmount, ZeroAddress, InvalidInputLength, InvalidOutputLength, ReferralAlreadyAdded, InvalidOutputType, NoTransferToNullAddress, UnauthorizedCaller, UnauthorizedSigner, FeeTooHigh, SenderCannotBeReferral, UnauthorizedCall } from "../shared/Errors.sol";
 
 /*  
 ---------------------------------------------------------
@@ -53,6 +53,7 @@ contract DZapZapCore is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, I
     mapping(address referrer => ReferralFeeInfo feeInfo) public referralFeeInfo;
     mapping(address user => uint256 nonce) public nonce;
     mapping(address admin => bool isAdmin) public admins;
+    mapping(address callTo => bool isWhitelisted) public allowedCalls;
 
     // -------------MODIFIERS-------------
 
@@ -102,6 +103,16 @@ contract DZapZapCore is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, I
         require(_verifier != address(0), ZeroAddress());
         verifier = _verifier;
         emit ZapVerifierSet(_verifier);
+    }
+
+
+    function setCallsWhitelisting(address[] memory _callTos, bool _whitelisted) external onlyOwner {
+        uint256 length = _callTos.length;
+        for (uint256 i; i < length; ++i) {
+            require(_callTos[i] != address(0), ZeroAddress());
+            allowedCalls[_callTos[i]] = _whitelisted;
+        }
+        emit CallsWhitelistingUpdated(_callTos, _whitelisted);
     }
 
     function addAdmin(address _account) external onlyOwner {
@@ -176,6 +187,7 @@ contract DZapZapCore is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, I
     function _execute(ZapData memory _zapData) private returns (bool success, bytes memory res) {
         if (_zapData.callData.length != 0) {
             if (_zapData.isDelegateCall) {
+                require(allowedCalls[_zapData.callTo], UnauthorizedCall(_zapData.callTo));
                 (success, res) = _zapData.callTo.delegatecall(_zapData.callData);
                 require(success, CallFailed(res));
             } else {

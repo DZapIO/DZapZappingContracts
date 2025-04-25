@@ -63,38 +63,6 @@
     "type": "event"
   },
   {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint8",
-        "name": "quorum_",
-        "type": "uint8"
-      }
-    ],
-    "name": "QuorumUpdated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address[]",
-        "name": "validators",
-        "type": "address[]"
-      },
-      {
-        "indexed": false,
-        "internalType": "bool",
-        "name": "isWhitelisted",
-        "type": "bool"
-      }
-    ],
-    "name": "ValidatorWhitelistingUpdated",
-    "type": "event"
-  },
-  {
     "inputs": [
       {
         "internalType": "bytes32",
@@ -195,25 +163,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_validator",
-        "type": "address"
-      }
-    ],
-    "name": "isValidatorWhitelisted",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "pause",
     "outputs": [],
@@ -234,37 +183,6 @@
       }
     ],
     "name": "setExecutorWhitelisting",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint8",
-        "name": "_quorum",
-        "type": "uint8"
-      }
-    ],
-    "name": "setQuorum",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address[]",
-        "name": "_validatorArr",
-        "type": "address[]"
-      },
-      {
-        "internalType": "bool",
-        "name": "_whitelisted",
-        "type": "bool"
-      }
-    ],
-    "name": "setValidatorWhitelisting",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

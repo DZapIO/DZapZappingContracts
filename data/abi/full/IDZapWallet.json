@@ -20,60 +20,27 @@
         "type": "bytes32"
       },
       {
-        "internalType": "address[]",
-        "name": "_callTo",
-        "type": "address[]"
+        "internalType": "uint256",
+        "name": "_deadline",
+        "type": "uint256"
       },
       {
-        "internalType": "bytes[]",
-        "name": "_callData",
-        "type": "bytes[]"
+        "internalType": "uint256",
+        "name": "_nonce",
+        "type": "uint256"
       },
       {
-        "internalType": "uint256[]",
-        "name": "_nativeValue",
-        "type": "uint256[]"
+        "internalType": "bytes",
+        "name": "_data",
+        "type": "bytes"
       },
       {
-        "internalType": "bool[]",
-        "name": "_isDelegateCall",
-        "type": "bool[]"
+        "internalType": "bytes",
+        "name": "_validatorSignatures",
+        "type": "bytes"
       }
     ],
     "name": "execute",
-    "outputs": [],
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "_txId",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "address[]",
-        "name": "_callTo",
-        "type": "address[]"
-      },
-      {
-        "internalType": "bytes[]",
-        "name": "_callData",
-        "type": "bytes[]"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "_nativeValue",
-        "type": "uint256[]"
-      },
-      {
-        "internalType": "bool[]",
-        "name": "_isDelegateCall",
-        "type": "bool[]"
-      }
-    ],
-    "name": "executeByExecutor",
     "outputs": [],
     "stateMutability": "payable",
     "type": "function"

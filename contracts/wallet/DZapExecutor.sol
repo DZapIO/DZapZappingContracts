@@ -4,12 +4,11 @@ pragma solidity 0.8.28;
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { Pausable } from "@openzeppelin/contracts/utils/Pausable.sol";
 
-import { LibValidator } from "./../shared/libraries/LibValidator.sol";
-
 import { IDZapWalletFactory } from "../interfaces/IDZapWalletFactory.sol";
 import { IDZapExecutor } from "../interfaces/IDZapExecutor.sol";
+import { IDZapWallet } from "../interfaces/IDZapWallet.sol";
 
-import { WalletExecutionCallFailed, ExecutorUnauthorizedAccount, SigDeadlineExpired, WalletNotDeployed, QuorumTooLow, NonceAlreadyProcessed } from "./../shared/Errors.sol";
+import { ExecutorUnauthorizedAccount, WalletNotDeployed } from "./../shared/Errors.sol";
 
 /*  
 ---------------------------------------------------------
@@ -32,16 +31,8 @@ Author: DZap <https://dzap.io> (https://x.com/dzap_io)
 */
 
 contract DZapExecutor is IDZapExecutor, Ownable, Pausable {
-    mapping(uint256 nonce => bool isUsed) public nonces;
     mapping(address executor => bool isWhitelisted) private _executors;
-    mapping(address validator => bool isWhitelisted) private _validators;
-    uint8 public quorum;
-    uint8 public immutable MIN_QUORUM = 2;
     IDZapWalletFactory public immutable DZAP_FACTORY;
-
-    bytes32 private _DOMAIN_SEPARATOR;
-    bytes32 private constant _DOMAIN_TYPEHASH = keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
-    bytes32 private constant _VALIDATOR_SIGNED_DATA_TYPEHASH = keccak256("SignedValidatorData(bytes32 txId,address executor,address wallet,uint256 deadline,uint256 nonce,bytes32 data)");
 
     // -------------MODIFIERS-------------
 
@@ -52,23 +43,15 @@ contract DZapExecutor is IDZapExecutor, Ownable, Pausable {
 
     // -------------CONSTRUCTOR-------------
 
-    constructor(address _newOwner, address _dZapFactory, uint8 _quorum, address[] memory _executorsToAdd, address[] memory _validatorsToAdd) Ownable(_newOwner) {
-        _DOMAIN_SEPARATOR = keccak256(abi.encode(_DOMAIN_TYPEHASH, keccak256(bytes("DZapExecutor")), keccak256(bytes("1")), block.chainid, address(this)));
-        require(_quorum >= MIN_QUORUM, QuorumTooLow());
+    constructor(address _newOwner, address _dZapFactory, address[] memory _executorsToAdd) Ownable(_newOwner) {
         DZAP_FACTORY = IDZapWalletFactory(_dZapFactory);
-        quorum = _quorum;
         _setExecutors(_executorsToAdd, true);
-        _setValidators(_validatorsToAdd, true);
     }
 
     // -------------VIEW-------------
 
     function isExecutorWhitelisted(address _executor) external view returns (bool) {
         return _executors[_executor];
-    }
-
-    function isValidatorWhitelisted(address _validator) external view returns (bool) {
-        return _validators[_validator];
     }
 
     // -------------Restricted-------------
@@ -86,18 +69,6 @@ contract DZapExecutor is IDZapExecutor, Ownable, Pausable {
         emit ExecutorWhitelistingUpdated(_executorsArr, _whitelisted);
     }
 
-    function setValidatorWhitelisting(address[] memory _validatorArr, bool _whitelisted) external onlyOwner {
-        _setValidators(_validatorArr, _whitelisted);
-        emit ValidatorWhitelistingUpdated(_validatorArr, _whitelisted);
-    }
- 
-    function setQuorum(uint8 _quorum) external onlyOwner {
-        require(_quorum >= MIN_QUORUM, QuorumTooLow());
-        quorum = _quorum;
-
-        emit QuorumUpdated(_quorum);
-    }
-
     // -------------EXTERNAL-------------
 
     /* 
@@ -107,43 +78,21 @@ contract DZapExecutor is IDZapExecutor, Ownable, Pausable {
      */
     function execute(bytes32 _txId, uint256 _deadline, uint256 _nonce, address _walletAddress, bytes calldata _callData, bytes calldata _validatorSignatures) external payable onlyAuthorizedExecutor whenNotPaused {
         require(DZAP_FACTORY.isWalletDeployed(_walletAddress), WalletNotDeployed());
-        _verify(_txId, _walletAddress, _deadline, _nonce, _callData, _validatorSignatures);
-        (bool success, bytes memory res) = _walletAddress.call{ value: msg.value }(_callData);
-        require(success, WalletExecutionCallFailed(res));
+        IDZapWallet(_walletAddress).execute{ value: msg.value }(_txId, _deadline, _nonce, _callData, _validatorSignatures);
         emit Executed(_txId, _walletAddress);
     }
 
     function deployWalletAndExecute(bytes32 _txId, uint256 _deadline, uint256 _nonce, address _userAddress, string memory _label, bytes calldata _callData, bytes calldata _validatorSignatures) external payable onlyAuthorizedExecutor whenNotPaused {
         address walletAddress = DZAP_FACTORY.deploy(_userAddress, _label);
-        _verify(_txId, walletAddress, _deadline, _nonce, _callData, _validatorSignatures);
-        (bool success, bytes memory res) = walletAddress.call{ value: msg.value }(_callData);
-        require(success, WalletExecutionCallFailed(res));
+        IDZapWallet(walletAddress).execute{ value: msg.value }(_txId, _deadline, _nonce, _callData, _validatorSignatures);
         emit DeployAndExecuted(_txId, _userAddress, walletAddress);
     }
 
     // -------------EXTERNAL-------------
-
-    function _verify(bytes32 _txId,  address _walletAddress, uint256 _deadline, uint256 _nonce, bytes calldata _data, bytes calldata _validatorSignatures) private {
-        require(_deadline >= block.timestamp, SigDeadlineExpired());
-        require(!nonces[_nonce], NonceAlreadyProcessed());
-        bytes32 msgHash = keccak256(abi.encode(_VALIDATOR_SIGNED_DATA_TYPEHASH, _txId, msg.sender, _walletAddress, _deadline, _nonce, keccak256(_data)));
-        bytes32 digest = keccak256(abi.encodePacked("\x19\x01", _DOMAIN_SEPARATOR, msgHash));
-        LibValidator.verifyValidatorSigs(_validators, _validatorSignatures, digest, quorum);
-
-        nonces[_nonce] = true;
-    }
-
     function _setExecutors(address[] memory _executorsArr, bool _whitelisted) private {
         uint256 length = _executorsArr.length;
         for (uint256 i; i < length; ++i) {
             _executors[_executorsArr[i]] = _whitelisted;
-        }
-    }
-
-    function _setValidators(address[] memory _validatorArr, bool _whitelisted) private {
-        uint256 length = _validatorArr.length;
-        for (uint256 i; i < length; ++i) {
-            _validators[_validatorArr[i]] = _whitelisted;
         }
     }
 }

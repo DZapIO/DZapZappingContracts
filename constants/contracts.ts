@@ -11,7 +11,7 @@ export const CONTRACTS = {
   DZapZapCore: 'DZapZapCore',
   DZapWallet: 'DZapWallet',
   DZapWalletFactory: 'DZapWalletFactory',
-  DZapRegistry: 'DZapRegistry',
+  DZapWalletManager: 'DZapWalletManager',
   DZapExecutor: 'DZapExecutor',
   AerodromeClFarmingAdapter: 'AerodromeClFarmingAdapter',
   FluidVaultAdapter: 'FluidVaultAdapter',
@@ -52,6 +52,9 @@ export const ERRORS = {
   InvalidOutputLength: 'InvalidOutputLength',
   InvalidReturnAmount: 'InvalidReturnAmount',
   InvalidTokenOwner: 'InvalidTokenOwner',
+  WalletIsPaused: 'WalletIsPaused',
+  UnauthorizedCall: 'UnauthorizedCall',
+  ReentrancyGuardReentrantCall: 'ReentrancyGuardReentrantCall',
 }
 
 export const EVENTS = {
@@ -75,10 +78,11 @@ export const EVENTS = {
   QuorumUpdated: 'QuorumUpdated',
   DeployAndExecuted: 'DeployAndExecuted',
   Zapped: 'Zapped',
+  CallsWhitelistingUpdated: 'CallsWhitelistingUpdated',
+  WalletPaused: 'WalletPaused',
 }
 
 export enum FUNCTIONS {
-  executeByExecutor = 'executeByExecutor',
   execute = 'execute',
   deployWalletAndExecute = 'deployWalletAndExecute',
 }

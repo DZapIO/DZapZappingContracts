@@ -6,10 +6,10 @@ import { ReentrancyGuardUpgradeable } from "@openzeppelin/contracts-upgradeable/
 
 import { MinimalWallet } from "../wallet/MinimalWallet.sol";
 
-import { IDZapRegistry } from "../interfaces/IDZapRegistry.sol";
+import { IDZapWalletManager } from "../interfaces/IDZapWalletManager.sol";
 import { IDZapWallet } from "../interfaces/IDZapWallet.sol";
 
-import { ExecutorUnauthorizedAccount, CallFailed } from "../shared/Errors.sol";
+import { UnauthorizedCaller, CallFailed, WalletIsPaused, SigDeadlineExpired, NonceAlreadyProcessed, UnauthorizedCall } from "../shared/Errors.sol";
 
 /*  
 ---------------------------------------------------------
@@ -34,39 +34,47 @@ Author: DZap <https://dzap.io> (https://x.com/dzap_io)
 contract DZapWallet is Initializable, MinimalWallet, ReentrancyGuardUpgradeable, IDZapWallet {
     // -------------STATE-------------
 
-    IDZapRegistry public immutable DZAP_REGISTRY;
+    IDZapWalletManager public immutable DZAP_WALLET_MANAGER; 
+    mapping(uint256 nonce => bool isUsed) public nonces;
+
+    bytes32 private _DOMAIN_SEPARATOR;
+    bytes32 private constant _DOMAIN_TYPEHASH = keccak256("EIP712Domain(string name,uint256 chainId,address verifyingContract)");
+    bytes32 private constant _VALIDATOR_SIGNED_DATA_TYPEHASH = keccak256("SignedValidatorData(bytes32 txId,address sender,uint256 deadline,uint256 nonce,bytes32 data)"); 
 
     // -------------MODIFIERS-------------
 
-    modifier onlyAuthorizedExecutor() {
-        require(DZAP_REGISTRY.isExecutorWhitelisted(msg.sender), ExecutorUnauthorizedAccount(msg.sender));
+    modifier onlyAuthorizedExecutorOrOwner() {
+        require(DZAP_WALLET_MANAGER.isExecutorWhitelisted(msg.sender) || msg.sender == owner, UnauthorizedCaller());
         _;
     }
 
+    modifier whenNotPaused() {
+        require(!DZAP_WALLET_MANAGER.walletPaused(), WalletIsPaused());
+        _;
+    } 
+
     // -------------INITIALIZER-------------
 
-    constructor(address _dzapRegistry) {
-        DZAP_REGISTRY = IDZapRegistry(_dzapRegistry);
+    constructor(address _dZapWalletManager) {
+        DZAP_WALLET_MANAGER = IDZapWalletManager(_dZapWalletManager);
         _disableInitializers();
     }
 
     function initialize(address _user) public initializer {
         _setOwner(_user);
         __ReentrancyGuard_init();
+
+        _DOMAIN_SEPARATOR = keccak256(abi.encode(_DOMAIN_TYPEHASH, keccak256(bytes("DZapWallet")), block.chainid, address(this)));
     }
 
     // -------------EXTERNAL-------------
 
-    function executeByExecutor(bytes32 _txId, address[] calldata _callTo, bytes[] calldata _callData, uint256[] calldata _nativeValue, bool[] calldata _isDelegateCall) external payable onlyAuthorizedExecutor nonReentrant {
-        uint256 length = _callTo.length;
-        for (uint256 i; i < length; ++i) {
-            _execute(_callTo[i], _callData[i], _nativeValue[i], _isDelegateCall[i]);
-        }
+    function execute(bytes32 _txId, uint256 _deadline, uint256 _nonce, bytes calldata _data, bytes calldata _validatorSignatures) external payable onlyAuthorizedExecutorOrOwner whenNotPaused nonReentrant {
+        _verify(_txId, _deadline, _nonce, _data, _validatorSignatures);
+        nonces[_nonce] = true;
 
-        emit Executed(_txId);
-    }
+        (address[] memory _callTo, bytes[] memory _callData, uint256[] memory _nativeValue, bool[] memory _isDelegateCall) = abi.decode(_data, (address[], bytes[], uint256[], bool[]));
 
-    function execute(bytes32 _txId, address[] calldata _callTo, bytes[] calldata _callData, uint256[] calldata _nativeValue, bool[] calldata _isDelegateCall) external payable onlyOwner nonReentrant {
         uint256 length = _callTo.length;
         for (uint256 i; i < length; ++i) {
             _execute(_callTo[i], _callData[i], _nativeValue[i], _isDelegateCall[i]);
@@ -77,9 +85,18 @@ contract DZapWallet is Initializable, MinimalWallet, ReentrancyGuardUpgradeable,
 
     // -------------INTERNAL-------------
 
+    function _verify(bytes32 _txId, uint256 _deadline, uint256 _nonce, bytes calldata _data, bytes calldata _validatorSignatures) private view {
+        require(_deadline >= block.timestamp, SigDeadlineExpired());
+        require(!nonces[_nonce], NonceAlreadyProcessed());
+        bytes32 msgHash = keccak256(abi.encode(_VALIDATOR_SIGNED_DATA_TYPEHASH, _txId, msg.sender, _deadline, _nonce, keccak256(_data)));
+        bytes32 digest = keccak256(abi.encodePacked("\x19\x01", _DOMAIN_SEPARATOR, msgHash));
+        DZAP_WALLET_MANAGER.verify(_validatorSignatures, digest);
+    }
+
     function _execute(address _callTo, bytes memory _callData, uint256 _nativeValue, bool _isDelegateCall) private returns (bool success, bytes memory res) {
         if (_callData.length != 0) {
             if (_isDelegateCall) {
+                require(DZAP_WALLET_MANAGER.isCallWhitelisted(_callTo), UnauthorizedCall(_callTo));
                 (success, res) = _callTo.delegatecall(_callData);
                 require(success, CallFailed(res));
             } else {

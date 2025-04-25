@@ -140,7 +140,7 @@ const config: HardhatUserConfig = {
       path: 'data/abi/full',
       only: [
         'DZapZapCore',
-        'DZapRegistry',
+        'DZapWalletManager',
         'DZapWalletFactory',
         'DZapWallet',
         'DZapExecutor',
@@ -156,7 +156,7 @@ const config: HardhatUserConfig = {
       format: 'fullName',
       only: [
         'DZapZapCore',
-        'DZapRegistry',
+        'DZapWalletManager',
         'DZapWalletFactory',
         'DZapWallet',
         'DZapExecutor',

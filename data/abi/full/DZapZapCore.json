@@ -467,6 +467,12 @@
         "internalType": "bytes32",
         "name": "txId",
         "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "vHash",
+        "type": "bytes32"
       }
     ],
     "name": "Zapped",
@@ -979,6 +985,11 @@
       {
         "internalType": "bytes32",
         "name": "_transactionId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "_vHash",
         "type": "bytes32"
       },
       {

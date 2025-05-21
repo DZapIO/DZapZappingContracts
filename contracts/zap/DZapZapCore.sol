@@ -159,13 +159,13 @@ contract DZapZapCore is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, I
     }
 
     // solhint-disable-next-line code-complexity
-    function zap(bytes32 _transactionId, bytes calldata _data, bytes calldata _signature, address _referral, InputErc20Tokens[] calldata _inputTokens, address[] calldata _sweepDust, address _dustReciever) external payable nonReentrant refundExcessNative(_dustReciever) {
+    function zap(bytes32 _transactionId, bytes32 _vHash, bytes calldata _data, bytes calldata _signature, address _referral, InputErc20Tokens[] calldata _inputTokens, address[] calldata _sweepDust, address _dustReciever) external payable nonReentrant refundExcessNative(_dustReciever) {
         require(_dustReciever != address(0), NoTransferToNullAddress());
         _handleVerification(_transactionId, _referral, _data, _signature);
         _handleErcDeposits(_inputTokens);
         _handleZap(_data, _referral);
         _handleSweepTokens(_sweepDust, _dustReciever);
-        emit Zapped(msg.sender, _transactionId);
+        emit Zapped(msg.sender, _transactionId, _vHash);
     }
 
     // -------------HELPERS-------------

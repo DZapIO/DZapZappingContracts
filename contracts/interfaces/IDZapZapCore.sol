@@ -12,7 +12,8 @@ interface IDZapZapCore {
     event ReferralAdded(address indexed referral);
     event AdminAdded(address indexed account);
     event AdminRemoved(address indexed account);
-    event Zapped(address indexed user, bytes32 indexed txId, bytes32 indexed vHash);
+    event Zapped(address indexed user, bytes32 indexed txId);
+    event CrossZapped(address indexed user, bytes32 indexed txId, bytes32 indexed vHash, address refundee);
     event TokenRecovered(address indexed token, address indexed recipient, uint256 amount);
     event ERC721Recovered(address indexed token, address indexed recipient, uint256 id);
     event ERC1155Recovered(address indexed token, address indexed recipient, uint256[] ids, uint256[] amounts);
@@ -45,10 +46,21 @@ interface IDZapZapCore {
 
     function zap(
         bytes32 _transactionId,
+        bytes calldata _data,
+        bytes calldata _signature,
+        address _referral,
+        InputErc20Tokens[] calldata _inputTokens,
+        address[] calldata _sweepDust,
+        address _dustReciever
+    ) external payable;
+
+    function crossZap(
+        bytes32 _transactionId,
         bytes32 _vHash,
         bytes calldata _data,
         bytes calldata _signature,
         address _referral,
+        address _refundee,
         InputErc20Tokens[] calldata _inputTokens,
         address[] calldata _sweepDust,
         address _dustReciever

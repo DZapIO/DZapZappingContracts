@@ -39,7 +39,7 @@ contract DZapZapCore is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, I
     // -------------STATE-------------
 
     address public feeVault;
-    address public permit2;
+    address public immutable PERMIT2;
     address public verifier;
     uint96 public defaultReferralNativeFeeShare;
     uint96 public defaultReferralTokenFeeShare;
@@ -71,13 +71,13 @@ contract DZapZapCore is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, I
 
     // -------------CONSTRUCTORS-------------
 
-    constructor(address _owner, address _feeVault, address _verifier, address _permit2, uint96 _defaultReferralNativeFeeShare, uint96 _defaultReferralTokenFeeShare, bytes32 _salt) Ownable(_owner) {
-        require(_verifier != address(0) && _permit2 != address(0), ZeroAddress());
+    constructor(address _owner, address _feeVault, address _verifier, address _PERMIT2, uint96 _defaultReferralNativeFeeShare, uint96 _defaultReferralTokenFeeShare, bytes32 _salt) Ownable(_owner) {
+        require(_verifier != address(0) && _PERMIT2 != address(0), ZeroAddress());
         require(_feeVault != address(0) && _feeVault != address(this), InvalidFeeVault());
         require(_defaultReferralNativeFeeShare < _BPS_DENOMINATOR && _defaultReferralTokenFeeShare < _BPS_DENOMINATOR, FeeTooHigh());
 
         feeVault = _feeVault;
-        permit2 = _permit2;
+        PERMIT2 = _PERMIT2;
         verifier = _verifier;
         defaultReferralNativeFeeShare = _defaultReferralNativeFeeShare;
         defaultReferralTokenFeeShare = _defaultReferralTokenFeeShare;
@@ -382,7 +382,7 @@ contract DZapZapCore is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, I
         uint256 length = _inputTokens.length;
 
         for (uint256 i; i < length; ++i) {
-            LibAsset.depositErc20(permit2, _inputTokens[i].token, msg.sender, _inputTokens[i].amount, _inputTokens[i].permit);
+            LibAsset.depositErc20(PERMIT2, _inputTokens[i].token, msg.sender, _inputTokens[i].amount, _inputTokens[i].permit);
         }
     }
 

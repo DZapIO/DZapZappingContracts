@@ -6,6 +6,7 @@
   "error OwnableInvalidOwner(address owner)",
   "error OwnableUnauthorizedAccount(address account)",
   "error WalletNotDeployed()",
+  "error ZeroAddress()",
   "event DeployAndExecuted(bytes32 indexed txId, address indexed userAddress, address indexed walletAddress)",
   "event Executed(bytes32 indexed txId, address indexed walletAddress)",
   "event ExecutorWhitelistingUpdated(address[] executors, bool isWhitelisted)",

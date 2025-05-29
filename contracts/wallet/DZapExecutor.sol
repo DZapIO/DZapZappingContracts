@@ -8,7 +8,7 @@ import { IDZapWalletFactory } from "../interfaces/IDZapWalletFactory.sol";
 import { IDZapExecutor } from "../interfaces/IDZapExecutor.sol";
 import { IDZapWallet } from "../interfaces/IDZapWallet.sol";
 
-import { ExecutorUnauthorizedAccount, WalletNotDeployed } from "./../shared/Errors.sol";
+import { ExecutorUnauthorizedAccount, WalletNotDeployed, ZeroAddress } from "./../shared/Errors.sol";
 
 /*  
 ---------------------------------------------------------
@@ -92,6 +92,7 @@ contract DZapExecutor is IDZapExecutor, Ownable, Pausable {
     function _setExecutors(address[] memory _executorsArr, bool _whitelisted) private {
         uint256 length = _executorsArr.length;
         for (uint256 i; i < length; ++i) {
+            require(_executorsArr[i] != address(0), ZeroAddress());
             _executors[_executorsArr[i]] = _whitelisted;
         }
     }

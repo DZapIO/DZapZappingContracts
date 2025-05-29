@@ -1,5 +1,5 @@
 [
-  "constructor(address _owner, address _feeVault, address _verifier, address _permit2, uint96 _defaultReferralNativeFeeShare, uint96 _defaultReferralTokenFeeShare, bytes32 _salt)",
+  "constructor(address _owner, address _feeVault, address _verifier, address _PERMIT2, uint96 _defaultReferralNativeFeeShare, uint96 _defaultReferralTokenFeeShare, bytes32 _salt)",
   "error CallFailed(bytes)",
   "error ECDSAInvalidSignature()",
   "error ECDSAInvalidSignatureLength(uint256 length)",
@@ -40,6 +40,7 @@
   "event TokenRecovered(address indexed token, address indexed recipient, uint256 amount)",
   "event ZapVerifierSet(address indexed verifier)",
   "event Zapped(address indexed user, bytes32 indexed txId)",
+  "function PERMIT2() view returns (address)",
   "function addAdmin(address _account)",
   "function addReferral(address _referral, uint96 _nativeFeeShare, uint96 _tokenFeeShare)",
   "function admins(address admin) view returns (bool isAdmin)",
@@ -53,7 +54,6 @@
   "function onERC1155Received(address, address, uint256, uint256, bytes) returns (bytes4)",
   "function onERC721Received(address, address, uint256, bytes) returns (bytes4)",
   "function owner() view returns (address)",
-  "function permit2() view returns (address)",
   "function recoverERC1155(address _token, address _recipient, uint256[] _ids, uint256[] _amounts)",
   "function recoverERC721(address _token, address _recipient, uint256 _id)",
   "function recoverToken(address _token, address _recipient, uint256 _amount)",

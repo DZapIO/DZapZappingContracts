@@ -48,10 +48,11 @@ interface IDZapZapCore {
         bytes32 _transactionId,
         bytes calldata _data,
         bytes calldata _signature,
+        uint256 _deadline,
         address _referral,
+        address _dustReciever,
         InputErc20Tokens[] calldata _inputTokens,
-        address[] calldata _sweepDust,
-        address _dustReciever
+        address[] calldata _sweepDust
     ) external payable;
 
     function crossZap(
@@ -59,10 +60,11 @@ interface IDZapZapCore {
         bytes32 _vHash,
         bytes calldata _data,
         bytes calldata _signature,
+        uint256 _deadline,
         address _referral,
         address _refundee,
+        address _dustReciever,
         InputErc20Tokens[] calldata _inputTokens,
-        address[] calldata _sweepDust,
-        address _dustReciever
+        address[] calldata _sweepDust
     ) external payable;
 }

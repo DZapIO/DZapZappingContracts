@@ -52,11 +52,11 @@ abstract contract MinimalWallet is ERC721Holder, ERC1155Holder, IMinimalWallet {
             tokenType = transferInfo.tokenType;
             if (tokenType == TokenType.ETH) {
                 amounts = transferInfo.amounts;
-                if (amounts.length != 1) revert InvalidArrayLength();
+                require(amounts.length == 1, InvalidArrayLength());
                 _withdrawETH(amounts[0], transferInfo.recipient);
             } else if (tokenType == TokenType.ERC20) {
                 amounts = transferInfo.amounts;
-                if (amounts.length != 1) revert InvalidArrayLength();
+                require(amounts.length == 1, InvalidArrayLength());
                 _withdrawERC20(IERC20(transferInfo.token), amounts[0], transferInfo.recipient);
             } else if (tokenType == TokenType.ERC721) {
                 ids = transferInfo.ids;
@@ -80,7 +80,7 @@ abstract contract MinimalWallet is ERC721Holder, ERC1155Holder, IMinimalWallet {
     // @param amounts An array of amounts for each erc20
     function withdrawERC20s(IERC20[] calldata erc20s, uint256[] calldata amounts, address[] calldata recipients) external onlyOwner {
         uint256 length = erc20s.length;
-        if (amounts.length != length) revert InvalidArrayLength();
+        require(amounts.length == length, InvalidArrayLength());
         for (uint256 i; i < length; ++i) {
             require(recipients[i] != address(0), ZeroAddress());
             _withdrawERC20(erc20s[i], amounts[i], recipients[i]);
@@ -151,7 +151,7 @@ abstract contract MinimalWallet is ERC721Holder, ERC1155Holder, IMinimalWallet {
 
     function _withdrawETH(uint256 amount, address recipient) internal {
         (bool success, ) = recipient.call{ value: amount }("");
-        if (!success) revert WithdrawFailed();
+        require(success, WithdrawFailed());
     }
 
     function _withdrawERC20(IERC20 erc20, uint256 amount, address recipient) internal {

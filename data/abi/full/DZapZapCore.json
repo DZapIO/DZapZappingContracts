@@ -32,6 +32,11 @@
         "type": "uint96"
       },
       {
+        "internalType": "uint256",
+        "name": "_maxTokenFee",
+        "type": "uint256"
+      },
+      {
         "internalType": "bytes32",
         "name": "_salt",
         "type": "bytes32"
@@ -39,17 +44,6 @@
     ],
     "stateMutability": "nonpayable",
     "type": "constructor"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes",
-        "name": "",
-        "type": "bytes"
-      }
-    ],
-    "name": "CallFailed",
-    "type": "error"
   },
   {
     "inputs": [],
@@ -142,6 +136,11 @@
   },
   {
     "inputs": [],
+    "name": "MaxTokenFeeTooHigh",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "NativeTransferFailed",
     "type": "error"
   },
@@ -225,6 +224,16 @@
     "type": "error"
   },
   {
+    "inputs": [],
+    "name": "SigDeadlineExpired",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "TokenFeeExceedsMax",
+    "type": "error"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -243,6 +252,27 @@
   {
     "inputs": [],
     "name": "UnauthorizedSigner",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "target",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes4",
+        "name": "funSig",
+        "type": "bytes4"
+      },
+      {
+        "internalType": "bytes",
+        "name": "reason",
+        "type": "bytes"
+      }
+    ],
+    "name": "ZapExecutionFailed",
     "type": "error"
   },
   {
@@ -505,6 +535,19 @@
   },
   {
     "inputs": [],
+    "name": "MAX_TOKEN_FEE",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "PERMIT2",
     "outputs": [
       {
@@ -613,6 +656,11 @@
         "type": "bytes"
       },
       {
+        "internalType": "uint256",
+        "name": "_deadline",
+        "type": "uint256"
+      },
+      {
         "internalType": "address",
         "name": "_referral",
         "type": "address"
@@ -620,6 +668,11 @@
       {
         "internalType": "address",
         "name": "_refundee",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_dustReciever",
         "type": "address"
       },
       {
@@ -648,11 +701,6 @@
         "internalType": "address[]",
         "name": "_sweepDust",
         "type": "address[]"
-      },
-      {
-        "internalType": "address",
-        "name": "_dustReciever",
-        "type": "address"
       }
     ],
     "name": "crossZap",
@@ -1093,8 +1141,18 @@
         "type": "bytes"
       },
       {
+        "internalType": "uint256",
+        "name": "_deadline",
+        "type": "uint256"
+      },
+      {
         "internalType": "address",
         "name": "_referral",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_dustReciever",
         "type": "address"
       },
       {
@@ -1123,11 +1181,6 @@
         "internalType": "address[]",
         "name": "_sweepDust",
         "type": "address[]"
-      },
-      {
-        "internalType": "address",
-        "name": "_dustReciever",
-        "type": "address"
       }
     ],
     "name": "zap",

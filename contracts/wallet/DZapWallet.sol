@@ -9,7 +9,7 @@ import { MinimalWallet } from "../wallet/MinimalWallet.sol";
 import { IDZapWalletManager } from "../interfaces/IDZapWalletManager.sol";
 import { IDZapWallet } from "../interfaces/IDZapWallet.sol";
 
-import { UnauthorizedCaller, CallFailed, WalletIsPaused, SigDeadlineExpired, NonceAlreadyProcessed, UnauthorizedCall } from "../shared/Errors.sol";
+import { UnauthorizedCaller, WalletIsPaused, SigDeadlineExpired, NonceAlreadyProcessed, UnauthorizedCall, WalletExecutionFailed } from "../shared/Errors.sol";
 
 /*  
 ---------------------------------------------------------
@@ -98,10 +98,10 @@ contract DZapWallet is Initializable, MinimalWallet, ReentrancyGuardUpgradeable,
             if (_isDelegateCall) {
                 require(DZAP_WALLET_MANAGER.isCallWhitelisted(_callTo), UnauthorizedCall(_callTo));
                 (success, res) = _callTo.delegatecall(_callData);
-                require(success, CallFailed(res));
+                require(success, WalletExecutionFailed(_callTo, bytes4(_callData), res));
             } else {
                 (success, res) = _callTo.call{ value: _nativeValue }(_callData);
-                require(success, CallFailed(res));
+                require(success, WalletExecutionFailed(_callTo, bytes4(_callData), res));
             }
         }
     }

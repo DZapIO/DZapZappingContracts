@@ -279,6 +279,11 @@
         "type": "bytes"
       },
       {
+        "internalType": "uint256",
+        "name": "_deadline",
+        "type": "uint256"
+      },
+      {
         "internalType": "address",
         "name": "_referral",
         "type": "address"
@@ -286,6 +291,11 @@
       {
         "internalType": "address",
         "name": "_refundee",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_dustReciever",
         "type": "address"
       },
       {
@@ -314,11 +324,6 @@
         "internalType": "address[]",
         "name": "_sweepDust",
         "type": "address[]"
-      },
-      {
-        "internalType": "address",
-        "name": "_dustReciever",
-        "type": "address"
       }
     ],
     "name": "crossZap",
@@ -469,8 +474,18 @@
         "type": "bytes"
       },
       {
+        "internalType": "uint256",
+        "name": "_deadline",
+        "type": "uint256"
+      },
+      {
         "internalType": "address",
         "name": "_referral",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_dustReciever",
         "type": "address"
       },
       {
@@ -499,11 +514,6 @@
         "internalType": "address[]",
         "name": "_sweepDust",
         "type": "address[]"
-      },
-      {
-        "internalType": "address",
-        "name": "_dustReciever",
-        "type": "address"
       }
     ],
     "name": "zap",

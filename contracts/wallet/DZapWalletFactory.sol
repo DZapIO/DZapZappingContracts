@@ -49,7 +49,7 @@ contract DZapWalletFactory is Ownable, Pausable, IDZapWalletFactory {
     // -------------VIEW-------------
 
     function getWalletByLabel(address _user, string memory _label) external view returns (address wallet) {
-        if (bytes(_label).length == 0) revert NoLabel();
+        require(bytes(_label).length > 0, NoLabel());
         return saltToWallet[_createSalt(_user, _label)];
     }
 
@@ -58,7 +58,7 @@ contract DZapWalletFactory is Ownable, Pausable, IDZapWalletFactory {
     }
 
     function predict(address _user, string memory _label) external view returns (address) {
-        if (bytes(_label).length == 0) revert NoLabel();
+        require(bytes(_label).length > 0, NoLabel());
         bytes32 salt = _createSalt(_user, _label);
         return Clones.predictDeterministicAddress(walletImp, salt);
     }
@@ -83,7 +83,7 @@ contract DZapWalletFactory is Ownable, Pausable, IDZapWalletFactory {
     // -------------EXTERNAL-------------
 
     function deploy(address _user, string memory _label) external whenNotPaused returns (address wallet) {
-        if (bytes(_label).length == 0) revert NoLabel();
+        require(bytes(_label).length > 0, NoLabel());
         bytes32 salt = _createSalt(_user, _label);
 
         require(saltToWallet[salt] == address(0), AlreadyDeployed());
@@ -93,7 +93,7 @@ contract DZapWalletFactory is Ownable, Pausable, IDZapWalletFactory {
     }
 
     function getOrDeploy(address _user, string memory _label) external whenNotPaused returns (address wallet) {
-        if (bytes(_label).length == 0) revert NoLabel();
+        require(bytes(_label).length > 0, NoLabel());
         if (walletToUser[_user] != address(0)) return _user;
 
         bytes32 salt = _createSalt(_user, _label);

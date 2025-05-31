@@ -1,6 +1,5 @@
 [
   "constructor(address _dZapWalletManager)",
-  "error CallFailed(bytes)",
   "error InvalidAccount()",
   "error InvalidArrayLength()",
   "error InvalidInitialization()",
@@ -12,6 +11,7 @@
   "error SigDeadlineExpired()",
   "error UnauthorizedCall(address callTo)",
   "error UnauthorizedCaller()",
+  "error WalletExecutionFailed(address target, bytes4 funSig, bytes reason)",
   "error WalletIsPaused()",
   "error WithdrawFailed()",
   "error ZeroAddress()",

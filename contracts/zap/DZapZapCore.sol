@@ -13,7 +13,7 @@ import { FullMath } from "../shared/libraries/FullMath.sol";
 import { IDZapZapCore } from "../interfaces/IDZapZapCore.sol";
 
 import { ZapData, TokenType, InputTransferType, OutputTransferType, InputToken, OutputToken, InputErc20Tokens, ReferralFeeInfo, TokenType } from "./Types.sol";
-import { InvalidFeeVault, CallFailed, InvalidTokenOwner, InvalidReturnAmount, ZeroAddress, InvalidInputLength, InvalidOutputLength, ReferralAlreadyAdded, InvalidOutputType, NoTransferToNullAddress, UnauthorizedCaller, UnauthorizedSigner, FeeTooHigh, SenderCannotBeReferral, UnauthorizedCall } from "../shared/Errors.sol";
+import { InvalidFeeVault, InvalidTokenOwner, InvalidReturnAmount, ZeroAddress, InvalidInputLength, InvalidOutputLength, ReferralAlreadyAdded, InvalidOutputType, NoTransferToNullAddress, UnauthorizedCaller, UnauthorizedSigner, FeeTooHigh, SenderCannotBeReferral, UnauthorizedCall, SigDeadlineExpired, MaxTokenFeeTooHigh, TokenFeeExceedsMax, ZapExecutionFailed} from "../shared/Errors.sol";
 
 /*  
 ---------------------------------------------------------
@@ -39,16 +39,18 @@ contract DZapZapCore is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, I
     // -------------STATE-------------
 
     address public feeVault;
-    address public immutable PERMIT2;
     address public verifier;
     uint96 public defaultReferralNativeFeeShare;
     uint96 public defaultReferralTokenFeeShare;
+
+    address public immutable PERMIT2;
+    uint256 public immutable MAX_TOKEN_FEE;
 
     bytes32 private immutable _DOMAIN_SEPARATOR;
 
     uint256 private constant _BPS_DENOMINATOR = 1e6; // 4 basis points
     bytes32 private constant _DOMAIN_TYPEHASH = keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract,bytes32 salt)");
-    bytes32 private constant _SIGNED_DATA_TYPEHASH = keccak256("SignedZapData(bytes32 txId,address user,address referral,uint256 nonce,bytes32 data)");
+    bytes32 private constant _SIGNED_DATA_TYPEHASH = keccak256("SignedZapData(bytes32 txId,address user,address referral,uint256 nonce,uint256 deadline,bytes32 data)");
 
     mapping(address referrer => ReferralFeeInfo feeInfo) public referralFeeInfo;
     mapping(address user => uint256 nonce) public nonce;
@@ -71,14 +73,25 @@ contract DZapZapCore is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, I
 
     // -------------CONSTRUCTORS-------------
 
-    constructor(address _owner, address _feeVault, address _verifier, address _PERMIT2, uint96 _defaultReferralNativeFeeShare, uint96 _defaultReferralTokenFeeShare, bytes32 _salt) Ownable(_owner) {
+    constructor(
+        address _owner, 
+        address _feeVault, 
+        address _verifier, 
+        address _PERMIT2, 
+        uint96 _defaultReferralNativeFeeShare, 
+        uint96 _defaultReferralTokenFeeShare, 
+        uint256 _maxTokenFee,
+        bytes32 _salt
+    ) Ownable(_owner) {
         require(_verifier != address(0) && _PERMIT2 != address(0), ZeroAddress());
         require(_feeVault != address(0) && _feeVault != address(this), InvalidFeeVault());
         require(_defaultReferralNativeFeeShare < _BPS_DENOMINATOR && _defaultReferralTokenFeeShare < _BPS_DENOMINATOR, FeeTooHigh());
+        require(_maxTokenFee < _BPS_DENOMINATOR, MaxTokenFeeTooHigh());
 
         feeVault = _feeVault;
         PERMIT2 = _PERMIT2;
         verifier = _verifier;
+        MAX_TOKEN_FEE = _maxTokenFee;
         defaultReferralNativeFeeShare = _defaultReferralNativeFeeShare;
         defaultReferralTokenFeeShare = _defaultReferralTokenFeeShare;
         _DOMAIN_SEPARATOR = keccak256(abi.encode(_DOMAIN_TYPEHASH, keccak256(bytes("DZapVerifier")), keccak256(bytes("1")), block.chainid, address(this), _salt));
@@ -159,18 +172,38 @@ contract DZapZapCore is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, I
     }
 
     // solhint-disable-next-line code-complexity
-    function zap(bytes32 _transactionId, bytes calldata _data, bytes calldata _signature, address _referral, InputErc20Tokens[] calldata _inputTokens, address[] calldata _sweepDust, address _dustReciever) external payable nonReentrant refundExcessNative(_dustReciever) {
+    function zap(
+        bytes32 _transactionId,
+        bytes calldata _data,
+        bytes calldata _signature,
+        uint256 _deadline,
+        address _referral,
+        address _dustReciever,
+        InputErc20Tokens[] calldata _inputTokens,
+        address[] calldata _sweepDust
+    ) external payable nonReentrant refundExcessNative(_dustReciever) {
         require(_dustReciever != address(0), NoTransferToNullAddress());
-        _handleVerification(_transactionId, _referral, _data, _signature);
+        _handleVerification(_transactionId, _deadline, _referral, _data, _signature);
         _handleErcDeposits(_inputTokens);
         _handleZap(_data, _referral);
         _handleSweepTokens(_sweepDust, _dustReciever);
         emit Zapped(msg.sender, _transactionId);
     }
  
-    function crossZap(bytes32 _transactionId, bytes32 _vHash, bytes calldata _data, bytes calldata _signature, address _referral, address _refundee, InputErc20Tokens[] calldata _inputTokens, address[] calldata _sweepDust, address _dustReciever) external payable nonReentrant refundExcessNative(_dustReciever) {
+    function crossZap(
+        bytes32 _transactionId,
+        bytes32 _vHash,
+        bytes calldata _data,
+        bytes calldata _signature,
+        uint256 _deadline,
+        address _referral,
+        address _refundee,
+        address _dustReciever,
+        InputErc20Tokens[] calldata _inputTokens,
+        address[] calldata _sweepDust
+    ) external payable nonReentrant refundExcessNative(_dustReciever) {
         require(_dustReciever != address(0), NoTransferToNullAddress());
-        _handleVerification(_transactionId, _referral, _data, _signature);
+        _handleVerification(_transactionId, _deadline,_referral, _data, _signature);
         _handleErcDeposits(_inputTokens);
         _handleZap(_data, _referral);
         _handleSweepTokens(_sweepDust, _dustReciever);
@@ -193,15 +226,15 @@ contract DZapZapCore is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, I
         if (_referralFee != 0) referralFeeAmount = FullMath.mulDiv(totalFeeAmount, _referralFee, _BPS_DENOMINATOR);
     }
 
-    function _execute(ZapData memory _zapData) private returns (bool success, bytes memory res) {
+    function _execute(ZapData memory _zapData) private {
         if (_zapData.callData.length != 0) {
             if (_zapData.isDelegateCall) {
                 require(allowedCalls[_zapData.callTo], UnauthorizedCall(_zapData.callTo));
-                (success, res) = _zapData.callTo.delegatecall(_zapData.callData);
-                require(success, CallFailed(res));
+                (bool success, bytes memory res) = _zapData.callTo.delegatecall(_zapData.callData);
+                require(success, ZapExecutionFailed(_zapData.callTo, bytes4(_zapData.callData), res));
             } else {
-                (success, res) = _zapData.callTo.call{ value: _zapData.nativeValue }(_zapData.callData);
-                require(success, CallFailed(res));
+                (bool success, bytes memory res) = _zapData.callTo.call{ value: _zapData.nativeValue }(_zapData.callData);
+                require(success, ZapExecutionFailed(_zapData.callTo, bytes4(_zapData.callData), res));
             }
         }
     }
@@ -339,6 +372,7 @@ contract DZapZapCore is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, I
         uint256 length = _inputCount + _zapData.inputLength;
         for (uint256 i = _inputCount; i < length; ++i) {
             InputToken memory inputToken = _inputTokens[i];
+            require(inputToken.fee <= MAX_TOKEN_FEE, TokenFeeExceedsMax());
 
             if (inputToken.tokenType == TokenType.NATIVE) {
                 (uint256 totalFeeAmount, uint256 referralFeeAmount) = _handleNativeInput(inputToken, inputToken.fee, _referralFee.tokenFeeShare);
@@ -357,6 +391,7 @@ contract DZapZapCore is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, I
         for (uint256 i = _outputCount; i < length; ++i) {
             OutputToken memory outputToken = _outputTokens[i];
             address recipient = _getRecipient(outputToken);
+            require(outputToken.fee <= MAX_TOKEN_FEE, TokenFeeExceedsMax());
 
             if (outputToken.tokenType == TokenType.ERC20) _handleERC20Output(outputToken, recipient, _initialOutputBalances[index++], outputToken.fee, _referralFee.tokenFeeShare, _referral);
             else if (outputToken.tokenType == TokenType.NATIVE) {
@@ -371,9 +406,11 @@ contract DZapZapCore is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, I
 
     // -------------PRIVATE-------------
 
-    function _handleVerification(bytes32 _transactionId, address _referral, bytes calldata _data, bytes calldata _signature) private {
+    function _handleVerification(bytes32 _transactionId, uint256 _deadline, address _referral, bytes calldata _data, bytes calldata _signature) private {
         require(msg.sender != _referral, SenderCannotBeReferral());
-        bytes32 msgHash = keccak256(abi.encode(_SIGNED_DATA_TYPEHASH, _transactionId, msg.sender, _referral, nonce[msg.sender], keccak256(_data)));
+        require(_deadline >= block.timestamp, SigDeadlineExpired());
+
+        bytes32 msgHash = keccak256(abi.encode(_SIGNED_DATA_TYPEHASH, _transactionId, msg.sender, _referral, nonce[msg.sender], _deadline, keccak256(_data)));
         _verifySignature(_signature, msgHash);
         ++nonce[msg.sender];
     }

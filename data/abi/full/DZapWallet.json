@@ -11,17 +11,6 @@
     "type": "constructor"
   },
   {
-    "inputs": [
-      {
-        "internalType": "bytes",
-        "name": "",
-        "type": "bytes"
-      }
-    ],
-    "name": "CallFailed",
-    "type": "error"
-  },
-  {
     "inputs": [],
     "name": "InvalidAccount",
     "type": "error"
@@ -92,6 +81,27 @@
   {
     "inputs": [],
     "name": "UnauthorizedCaller",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "target",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes4",
+        "name": "funSig",
+        "type": "bytes4"
+      },
+      {
+        "internalType": "bytes",
+        "name": "reason",
+        "type": "bytes"
+      }
+    ],
+    "name": "WalletExecutionFailed",
     "type": "error"
   },
   {

@@ -37,6 +37,7 @@ error InvalidArrayLength();
 error QuorumTooLow();
 error WalletIsPaused();
 error UnauthorizedCall(address callTo);
+error SelfCallNotAllowed();
 
 // ----------ZAP----------
 

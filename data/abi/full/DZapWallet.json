@@ -64,6 +64,11 @@
   },
   {
     "inputs": [],
+    "name": "SelfCallNotAllowed",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "SigDeadlineExpired",
     "type": "error"
   },

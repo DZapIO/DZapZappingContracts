@@ -31,6 +31,8 @@ interface IPermit2 {
         uint256 requestedAmount;
     }
 
+    function allowance(address, address, address) external view returns (uint160 amount, uint48 expiration, uint48 nonce);
+
     function permit(address owner, PermitSingle memory permitSingle, bytes calldata signature) external;
 
     function transferFrom(address from, address to, uint160 amount, address token) external;

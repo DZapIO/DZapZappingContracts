@@ -8,6 +8,7 @@
   "error OwnableUnauthorizedAccount(address)",
   "error ReentrancyGuardReentrantCall()",
   "error SafeERC20FailedOperation(address token)",
+  "error SelfCallNotAllowed()",
   "error SigDeadlineExpired()",
   "error UnauthorizedCall(address callTo)",
   "error UnauthorizedCaller()",

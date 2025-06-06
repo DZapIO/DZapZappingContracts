@@ -82,6 +82,7 @@ export const EVENTS = {
   Zapped: 'Zapped',
   CallsWhitelistingUpdated: 'CallsWhitelistingUpdated',
   WalletPaused: 'WalletPaused',
+  WalletFactoryUpdated: 'WalletFactoryUpdated',
 }
 
 export enum FUNCTIONS {

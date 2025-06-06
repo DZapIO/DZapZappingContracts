@@ -71,8 +71,9 @@ abstract contract MinimalWallet is ERC721Holder, ERC1155Holder, IMinimalWallet {
 
     // @notice Withdraw ETH from this contract to the msg.sender
     // @param amount The amount of ETH to be withdrawn
-    function withdrawETH(uint256 amount, address recipient) external onlyOwner {
+    function withdrawNative(uint256 amount, address recipient) external onlyOwner {
         _withdrawETH(amount, recipient);
+        emit WithdrawnNative();
     }
 
     // @notice Withdraw ERC20s
@@ -85,6 +86,7 @@ abstract contract MinimalWallet is ERC721Holder, ERC1155Holder, IMinimalWallet {
             require(recipients[i] != address(0), ZeroAddress());
             _withdrawERC20(erc20s[i], amounts[i], recipients[i]);
         }
+        emit WithdrawnErc20();
     }
 
     // @notice Withdraw multiple ERC721 ids for a single ERC721 contract
@@ -95,6 +97,7 @@ abstract contract MinimalWallet is ERC721Holder, ERC1155Holder, IMinimalWallet {
         for (uint256 i; i < length; ++i) {
             _withdrawERC721s(erc721s[i], ids[i], recipients[i]);
         }
+        emit WithdrawnErc721();
     }
 
     // @notice Withdraw multiple ERC1155 ids for a single ERC1155 contract
@@ -103,6 +106,7 @@ abstract contract MinimalWallet is ERC721Holder, ERC1155Holder, IMinimalWallet {
     // @param amounts An array of amounts per id
     function withdrawERC1155s(IERC1155 erc1155, uint256[] calldata ids, uint256[] calldata amounts, address recipient) external onlyOwner {
         _withdrawERC1155s(erc1155, ids, amounts, recipient);
+        emit WithdrawnErc1155();
     }
 
     // @notice Revoke approval on an array of assets and operators
@@ -131,6 +135,7 @@ abstract contract MinimalWallet is ERC721Holder, ERC1155Holder, IMinimalWallet {
     // @param operators The array of operators to have approval revoked
     function revokeERC20Approvals(IERC20 erc20, address[] calldata operators) external onlyOwner {
         _revokeERC20Approvals(erc20, operators);
+        emit Erc20ApprovalRevoked();
     }
 
     // @notice Revoke approval of an ERC721 for an array of operators
@@ -138,6 +143,7 @@ abstract contract MinimalWallet is ERC721Holder, ERC1155Holder, IMinimalWallet {
     // @param operators The array of operators to have approval revoked
     function revokeERC721Approvals(IERC721 erc721, address[] calldata operators) external onlyOwner {
         _revokeERC721Approvals(erc721, operators);
+        emit Erc721ApprovalRevoked();
     }
 
     // @notice Revoke approval of an ERC1155 for an array of operators
@@ -145,6 +151,7 @@ abstract contract MinimalWallet is ERC721Holder, ERC1155Holder, IMinimalWallet {
     // @param operators The array of operators to have approval revoked
     function revokeERC1155Approvals(IERC1155 erc1155, address[] calldata operators) external onlyOwner {
         _revokeERC1155Approvals(erc1155, operators);
+        emit Erc1155ApprovalRevoked();
     }
 
     //--------------------INTERNAL----------------------------

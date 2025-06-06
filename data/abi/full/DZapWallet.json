@@ -89,6 +89,11 @@
     "type": "error"
   },
   {
+    "inputs": [],
+    "name": "UnauthorizedInitializer",
+    "type": "error"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -126,6 +131,24 @@
   },
   {
     "anonymous": false,
+    "inputs": [],
+    "name": "Erc1155ApprovalRevoked",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [],
+    "name": "Erc20ApprovalRevoked",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [],
+    "name": "Erc721ApprovalRevoked",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
     "inputs": [
       {
         "indexed": true,
@@ -148,6 +171,30 @@
       }
     ],
     "name": "Initialized",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [],
+    "name": "WithdrawnErc1155",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [],
+    "name": "WithdrawnErc20",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [],
+    "name": "WithdrawnErc721",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [],
+    "name": "WithdrawnNative",
     "type": "event"
   },
   {
@@ -197,11 +244,29 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "getDomainSeparator",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
         "name": "_user",
         "type": "address"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "_salt",
+        "type": "bytes32"
       }
     ],
     "name": "initialize",
@@ -583,7 +648,7 @@
         "type": "address"
       }
     ],
-    "name": "withdrawETH",
+    "name": "withdrawNative",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

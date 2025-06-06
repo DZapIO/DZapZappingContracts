@@ -7,6 +7,11 @@
         "type": "address"
       },
       {
+        "internalType": "address",
+        "name": "_walletFactory",
+        "type": "address"
+      },
+      {
         "internalType": "uint8",
         "name": "_quorum",
         "type": "uint8"
@@ -197,6 +202,19 @@
       }
     ],
     "name": "ValidatorWhitelistingUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "factory",
+        "type": "address"
+      }
+    ],
+    "name": "WalletFactoryUpdated",
     "type": "event"
   },
   {
@@ -411,6 +429,19 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_newWalletFactory",
+        "type": "address"
+      }
+    ],
+    "name": "updateWalletFactory",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "bytes",
         "name": "_signatures",
         "type": "bytes"
@@ -423,6 +454,19 @@
     ],
     "name": "verify",
     "outputs": [],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "walletFactory",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },

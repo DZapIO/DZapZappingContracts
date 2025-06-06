@@ -9,7 +9,7 @@ import { MinimalWallet } from "../wallet/MinimalWallet.sol";
 import { IDZapWalletManager } from "../interfaces/IDZapWalletManager.sol";
 import { IDZapWallet } from "../interfaces/IDZapWallet.sol";
 
-import { UnauthorizedCaller, WalletIsPaused, SigDeadlineExpired, NonceAlreadyProcessed, UnauthorizedCall, WalletExecutionFailed, SelfCallNotAllowed } from "../shared/Errors.sol";
+import { UnauthorizedInitializer, UnauthorizedCaller, WalletIsPaused, SigDeadlineExpired, NonceAlreadyProcessed, UnauthorizedCall, WalletExecutionFailed, SelfCallNotAllowed } from "../shared/Errors.sol";
 
 /*  
 ---------------------------------------------------------
@@ -38,8 +38,10 @@ contract DZapWallet is Initializable, MinimalWallet, ReentrancyGuardUpgradeable,
     mapping(uint256 nonce => bool isUsed) public nonces;
 
     bytes32 private _DOMAIN_SEPARATOR;
-    bytes32 private constant _DOMAIN_TYPEHASH = keccak256("EIP712Domain(string name,uint256 chainId,address verifyingContract)");
+    bytes32 private constant _DOMAIN_TYPEHASH = keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract,bytes32 salt)");
     bytes32 private constant _VALIDATOR_SIGNED_DATA_TYPEHASH = keccak256("SignedValidatorData(bytes32 txId,address sender,uint256 deadline,uint256 nonce,bytes32 data)"); 
+    string private constant _DOMAIN_NAME = "DZapWallet";
+    string private constant _WALLET_VERSION = "1";
 
     // -------------MODIFIERS-------------
 
@@ -53,6 +55,12 @@ contract DZapWallet is Initializable, MinimalWallet, ReentrancyGuardUpgradeable,
         _;
     } 
 
+    // -------------VIEW-------------
+
+    function getDomainSeparator() public view returns (bytes32) {
+        return _DOMAIN_SEPARATOR;
+    }
+
     // -------------INITIALIZER-------------
 
     constructor(address _dZapWalletManager) {
@@ -60,11 +68,20 @@ contract DZapWallet is Initializable, MinimalWallet, ReentrancyGuardUpgradeable,
         _disableInitializers();
     }
 
-    function initialize(address _user) public initializer {
+    function initialize(address _user, bytes32 _salt) public initializer {
+        require(DZAP_WALLET_MANAGER.walletFactory() == msg.sender, UnauthorizedInitializer());
+
         _setOwner(_user);
         __ReentrancyGuard_init();
 
-        _DOMAIN_SEPARATOR = keccak256(abi.encode(_DOMAIN_TYPEHASH, keccak256(bytes("DZapWallet")), block.chainid, address(this)));
+        _DOMAIN_SEPARATOR = keccak256(abi.encode(
+            _DOMAIN_TYPEHASH, 
+            keccak256(bytes(_DOMAIN_NAME)), 
+            keccak256(bytes(_WALLET_VERSION)), 
+            block.chainid, 
+            address(this), 
+            _salt
+        ));
     }
 
     // -------------EXTERNAL-------------

@@ -1,5 +1,5 @@
 [
-  "constructor(address _newOwner, address _walletImp)",
+  "constructor(address _newOwner)",
   "error AddressIsWallet()",
   "error AlreadyDeployed()",
   "error EnforcedPause()",

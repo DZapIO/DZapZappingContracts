@@ -4,5 +4,6 @@
   "function quorum() view returns (uint8)",
   "function setExecutorWhitelisting(address _executor, bool _whitelisted)",
   "function verify(bytes _signatures, bytes32 _hash) view",
+  "function walletFactory() view returns (address)",
   "function walletPaused() view returns (bool)"
 ]

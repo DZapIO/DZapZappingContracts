@@ -45,27 +45,30 @@ library LibAsset {
     // -------------HELPERS-------------
 
     function transferToken(address _token, address _to, uint256 _amount) internal {
-        if (_amount != 0) {
+        if (_amount > 0) {
             if (_token == _NATIVE_TOKEN) transferNativeToken(_to, _amount);
             else transferERC20(_token, _to, _amount);
         }
     }
 
     function transferNativeToken(address _to, uint256 _amount) internal {
-        require(_to != address(0), NoTransferToNullAddress());
-        (bool success, ) = _to.call{ value: _amount }("");
-        require(success, NativeTransferFailed());
+        if (_amount > 0) {
+            require(_to != address(0), NoTransferToNullAddress());
+            (bool success, ) = _to.call{ value: _amount }("");
+            require(success, NativeTransferFailed());
+        }
     }
 
     function transferERC20(address _token, address _to, uint256 _amount) internal {
-        SafeERC20.safeTransfer(IERC20(_token), _to, _amount);
+        if (_amount > 0) {
+            IERC20(_token).safeTransfer(_to, _amount);
+        }
     }
 
     function transferFromERC20(address _token, address _from, address _to, uint256 _amount) internal {
-        IERC20 token = IERC20(_token);
-        uint256 prevBalance = token.balanceOf(_to);
-        SafeERC20.safeTransferFrom(token, _from, _to, _amount);
-        require(token.balanceOf(_to) - prevBalance == _amount, InvalidAmount());
+        if (_amount > 0) {
+            IERC20(_token).safeTransferFrom(_from, _to, _amount);
+        }
     }
 
     function approveERC20(address _token, address _spender, uint256 _amount) internal {
@@ -109,6 +112,7 @@ library LibAsset {
     }
 
     function depositErc20(address _permit2, address _token, address _from, uint256 _amount, bytes memory permit_) internal {
+        require(_amount > 0, InvalidAmount());
         (PermitType permitType, bytes memory data) = abi.decode(permit_, (PermitType, bytes));
 
         if (permitType == PermitType.PERMIT2) LibPermit.permit2ApproveAndTransfer(_permit2, _from, address(this), uint160(_amount), _token, data);

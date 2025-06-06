@@ -19,6 +19,7 @@ error NullAddrIsNotAValidSpender();
 
 // ----------Wallet----------
 
+error UnauthorizedInitializer();
 error InvalidWalletImp();
 error AlreadyDeployed();
 error AddressIsWallet();

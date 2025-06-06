@@ -40,11 +40,7 @@ contract DZapWalletFactory is Ownable, Pausable, IDZapWalletFactory {
 
     // -------------INITIALIZER-------------
 
-    constructor(address _newOwner, address _walletImp) Ownable(_newOwner) {
-        require(_walletImp != address(0), InvalidWalletImp());
-
-        walletImp = _walletImp;
-    }
+    constructor(address _newOwner) Ownable(_newOwner) {}
 
     // -------------VIEW-------------
 
@@ -82,7 +78,7 @@ contract DZapWalletFactory is Ownable, Pausable, IDZapWalletFactory {
 
     // -------------EXTERNAL-------------
 
-    function deploy(address _user, string memory _label) external whenNotPaused returns (address wallet) {
+    function deploy(address _user, string calldata _label) external whenNotPaused returns (address wallet) {
         require(bytes(_label).length > 0, NoLabel());
         bytes32 salt = _createSalt(_user, _label);
 
@@ -92,7 +88,7 @@ contract DZapWalletFactory is Ownable, Pausable, IDZapWalletFactory {
         return _deploy(_user, salt);
     }
 
-    function getOrDeploy(address _user, string memory _label) external whenNotPaused returns (address wallet) {
+    function getOrDeploy(address _user, string calldata _label) external whenNotPaused returns (address wallet) {
         require(bytes(_label).length > 0, NoLabel());
         if (walletToUser[_user] != address(0)) return _user;
 
@@ -105,10 +101,12 @@ contract DZapWalletFactory is Ownable, Pausable, IDZapWalletFactory {
     // -------------INTERNAL-------------
 
     function _deploy(address _user, bytes32 _salt) internal returns (address wallet) {
+        require(walletImp != address(0), InvalidWalletImp());
         require(_user != address(0), ZeroAddress());
+        
         wallet = Clones.cloneDeterministic(walletImp, _salt);
 
-        IDZapWallet(payable(wallet)).initialize(_user);
+        IDZapWallet(payable(wallet)).initialize(_user, _salt);
 
         saltToWallet[_salt] = wallet;
         walletToUser[wallet] = _user;
@@ -117,6 +115,6 @@ contract DZapWalletFactory is Ownable, Pausable, IDZapWalletFactory {
     }
 
     function _createSalt(address _user, string memory _label) private pure returns (bytes32) {
-        return keccak256(abi.encodePacked(_user, _label));
+        return keccak256(abi.encode(_user, _label));
     }
 }

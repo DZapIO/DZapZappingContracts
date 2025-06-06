@@ -35,6 +35,7 @@ contract DZapWalletManager is Ownable, IDZapWalletManager {
     mapping(address validator => bool isWhitelisted) private _validators;
     mapping(address callTo => bool isWhitelisted) private _allowedCalls;
 
+    address public walletFactory;
     uint8 public quorum;
     uint8 public immutable MIN_QUORUM = 2;
 
@@ -42,6 +43,7 @@ contract DZapWalletManager is Ownable, IDZapWalletManager {
 
     // -------------EVENTS-------------
 
+    event WalletFactoryUpdated(address indexed factory);
     event ExecutorWhitelistingUpdated(address indexed executor, bool isWhitelisted);
     event ValidatorWhitelistingUpdated(address[] validators, bool isWhitelisted);
     event CallsWhitelistingUpdated(address[] callTo, bool isWhitelisted);
@@ -50,8 +52,10 @@ contract DZapWalletManager is Ownable, IDZapWalletManager {
 
     // -------------CONSTRUCTOR-------------
 
-    constructor(address _owner, uint8 _quorum, address[] memory _validatorsToAdd) Ownable(_owner) {
+    constructor(address _owner, address _walletFactory, uint8 _quorum, address[] memory _validatorsToAdd) Ownable(_owner) {
+        require(_walletFactory != address(0), ZeroAddress());
         require(_quorum >= MIN_QUORUM, QuorumTooLow());
+        walletFactory = _walletFactory;
         quorum = _quorum;
         _setValidators(_validatorsToAdd, true);
     }
@@ -76,6 +80,13 @@ contract DZapWalletManager is Ownable, IDZapWalletManager {
 
     // -------------EXTERNAL-------------
 
+    function updateWalletFactory(address _newWalletFactory) external onlyOwner {
+        require(_newWalletFactory != address(0), ZeroAddress());
+        
+        walletFactory = _newWalletFactory;
+        emit WalletFactoryUpdated(_newWalletFactory);
+    }
+   
     function setWalletPaused(bool _paused) external onlyOwner {
         walletPaused = _paused;
         emit WalletPaused(_paused);

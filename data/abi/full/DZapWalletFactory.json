@@ -5,11 +5,6 @@
         "internalType": "address",
         "name": "_newOwner",
         "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_walletImp",
-        "type": "address"
       }
     ],
     "stateMutability": "nonpayable",

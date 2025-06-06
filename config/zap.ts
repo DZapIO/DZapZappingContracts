@@ -5,6 +5,7 @@ export const ZAP_CONGIG = {
   zapFeeVault: '',
   zapVerifier: '',
   domainSaltKey: '-<chainId>',
+  maxTokenFee: 0n,
   defaultReferralNativeFeeShare: 0n,
   defaultReferralTokenFeeShare: 0n,
 }
@@ -14,6 +15,7 @@ export const STAGING_ZAP_CONGIG = {
   zapFeeVault: '0xdbcf663ee23e7887c7d77b8143ddffdd5001c693',
   zapVerifier: '0xdc7cc0c5360d4bd4eb13f563d9bd974e49fdfb53',
   domainSaltKey: 'Test-DZap-v0.1-<chainId>',
+  maxTokenFee: 10n * BPS_MULTIPLIER,
   defaultReferralNativeFeeShare: 25n * BPS_MULTIPLIER,
   defaultReferralTokenFeeShare: 30n * BPS_MULTIPLIER,
 }

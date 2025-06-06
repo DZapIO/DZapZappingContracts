@@ -51,6 +51,8 @@ contract DZapZapCore is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, I
     uint256 private constant _BPS_DENOMINATOR = 1e6; // 4 basis points
     bytes32 private constant _DOMAIN_TYPEHASH = keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract,bytes32 salt)");
     bytes32 private constant _SIGNED_DATA_TYPEHASH = keccak256("SignedZapData(bytes32 txId,address user,address referral,uint256 nonce,uint256 deadline,bytes32 data)");
+    string private constant _DOMAIN_NAME = "DZapVerifier";
+    string private constant _ZAP_VERSION = "1";
 
     mapping(address referrer => ReferralFeeInfo feeInfo) public referralFeeInfo;
     mapping(address user => uint256 nonce) public nonce;
@@ -94,7 +96,7 @@ contract DZapZapCore is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, I
         MAX_TOKEN_FEE = _maxTokenFee;
         defaultReferralNativeFeeShare = _defaultReferralNativeFeeShare;
         defaultReferralTokenFeeShare = _defaultReferralTokenFeeShare;
-        _DOMAIN_SEPARATOR = keccak256(abi.encode(_DOMAIN_TYPEHASH, keccak256(bytes("DZapVerifier")), keccak256(bytes("1")), block.chainid, address(this), _salt));
+        _DOMAIN_SEPARATOR = keccak256(abi.encode(_DOMAIN_TYPEHASH, keccak256(bytes(_DOMAIN_NAME)), keccak256(bytes(_ZAP_VERSION)), block.chainid, address(this), _salt));
     }
 
     // -------------RESTRICTED-------------
@@ -252,10 +254,8 @@ contract DZapZapCore is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, I
     }
 
     function _transferTokenFee(address _tokenAddress, address _referralAddress, uint256 _totalFeeAmount, uint256 _referralFeeAmount) private {
-        if (_totalFeeAmount != 0) {
-            if (_referralFeeAmount != 0) LibAsset.transferERC20(_tokenAddress, _referralAddress, _referralFeeAmount);
-            LibAsset.transferERC20(_tokenAddress, feeVault, _totalFeeAmount - _referralFeeAmount);
-        }
+        LibAsset.transferERC20(_tokenAddress, feeVault, _totalFeeAmount - _referralFeeAmount);
+        LibAsset.transferERC20(_tokenAddress, _referralAddress, _referralFeeAmount);
     }
 
     function _revokeErc1155Approvals(InputToken[] memory inputTokens) private {
@@ -428,7 +428,7 @@ contract DZapZapCore is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, I
         for (uint256 i = 0; i < length; ++i) {
             address tokenAddress = _sweepErc20[i];
             uint256 balance = LibAsset.getBalance(tokenAddress, address(this));
-            if (balance != 0) LibAsset.transferERC20(tokenAddress, _dustReciever, balance);
+            LibAsset.transferERC20(tokenAddress, _dustReciever, balance);
         }
     }
 

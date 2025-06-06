@@ -1,5 +1,5 @@
 [
-  "constructor(address _owner, uint8 _quorum, address[] _validatorsToAdd)",
+  "constructor(address _owner, address _walletFactory, uint8 _quorum, address[] _validatorsToAdd)",
   "error ECDSAInvalidSignature()",
   "error ECDSAInvalidSignatureLength(uint256 length)",
   "error ECDSAInvalidSignatureS(bytes32 s)",
@@ -16,6 +16,7 @@
   "event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)",
   "event QuorumUpdated(uint8 quorum)",
   "event ValidatorWhitelistingUpdated(address[] validators, bool isWhitelisted)",
+  "event WalletFactoryUpdated(address indexed factory)",
   "event WalletPaused(bool isPaused)",
   "function MIN_QUORUM() view returns (uint8)",
   "function isCallWhitelisted(address _callTo) view returns (bool)",
@@ -30,6 +31,8 @@
   "function setValidatorWhitelisting(address[] _validatorArr, bool _whitelisted)",
   "function setWalletPaused(bool _paused)",
   "function transferOwnership(address newOwner)",
+  "function updateWalletFactory(address _newWalletFactory)",
   "function verify(bytes _signatures, bytes32 _hash) view",
+  "function walletFactory() view returns (address)",
   "function walletPaused() view returns (bool)"
 ]

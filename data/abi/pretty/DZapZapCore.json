@@ -9,6 +9,7 @@
   "error InvalidInputLength()",
   "error InvalidOutputLength()",
   "error InvalidOutputType()",
+  "error InvalidPermit()",
   "error InvalidPermitData()",
   "error InvalidReturnAmount(uint256 returnAmount, uint256 minReturn)",
   "error InvalidTokenOwner(uint256)",

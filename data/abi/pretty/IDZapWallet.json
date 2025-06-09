@@ -1,5 +1,6 @@
 [
   "event Executed(bytes32 indexed txId)",
   "function execute(bytes32 _txId, uint256 _deadline, uint256 _nonce, bytes _data, bytes _validatorSignatures) payable",
-  "function initialize(address _user)"
+  "function getDomainSeparator() view returns (bytes32)",
+  "function initialize(address _user, bytes32 _salt)"
 ]

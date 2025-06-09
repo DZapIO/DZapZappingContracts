@@ -19,6 +19,7 @@ error NullAddrIsNotAValidSpender();
 
 // ----------Wallet----------
 
+error UnauthorizedInitializer();
 error InvalidWalletImp();
 error AlreadyDeployed();
 error AddressIsWallet();
@@ -37,6 +38,7 @@ error InvalidArrayLength();
 error QuorumTooLow();
 error WalletIsPaused();
 error UnauthorizedCall(address callTo);
+error SelfCallNotAllowed();
 
 // ----------ZAP----------
 

@@ -104,6 +104,11 @@
   },
   {
     "inputs": [],
+    "name": "InvalidPermit",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "InvalidPermitData",
     "type": "error"
   },

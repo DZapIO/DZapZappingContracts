@@ -46,7 +46,8 @@ export const ERRORS = {
   SignatureAlreadyProcessed: 'SignatureAlreadyProcessed',
   QuorumNotReached: 'QuorumNotReached',
   WalletNotDeployed: 'WalletNotDeployed',
-  WalletExecutionCallFailed: 'WalletExecutionCallFailed',
+  WalletExecutionFailed: 'WalletExecutionFailed',
+  ZapExecutionFailed: 'ZapExecutionFailed',
   ERC20InsufficientAllowance: 'ERC20InsufficientAllowance',
   InvalidInputLength: 'InvalidInputLength',
   InvalidOutputLength: 'InvalidOutputLength',
@@ -55,6 +56,7 @@ export const ERRORS = {
   WalletIsPaused: 'WalletIsPaused',
   UnauthorizedCall: 'UnauthorizedCall',
   ReentrancyGuardReentrantCall: 'ReentrancyGuardReentrantCall',
+  SelfCallNotAllowed: 'SelfCallNotAllowed',
 }
 
 export const EVENTS = {
@@ -80,6 +82,7 @@ export const EVENTS = {
   Zapped: 'Zapped',
   CallsWhitelistingUpdated: 'CallsWhitelistingUpdated',
   WalletPaused: 'WalletPaused',
+  WalletFactoryUpdated: 'WalletFactoryUpdated',
 }
 
 export enum FUNCTIONS {

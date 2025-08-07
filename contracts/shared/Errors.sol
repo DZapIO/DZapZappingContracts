@@ -53,3 +53,7 @@ error UnauthorizedSigner();
 error SenderCannotBeReferral();
 error MaxTokenFeeTooHigh();
 error TokenFeeExceedsMax();
+error InvalidPermitType();
+
+error UniswapPermit2AlreadySet();
+error UniswapPermit2NotDeployed();

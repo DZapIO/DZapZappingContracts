@@ -10,10 +10,11 @@ enum TokenType {
 }
 
 enum InputTransferType {
-    None, 
+    None,
     ApproveForSpender,
-    TransferToSpender, 
-    DirectTransferToSpender
+    TransferToSpender,
+    DirectTransferToSpender,
+    ApproveForSpenderViaPermit2
 }
 
 enum OutputTransferType {
@@ -60,4 +61,9 @@ struct InputErc20Tokens {
 struct ReferralFeeInfo {
     uint96 nativeFeeShare;
     uint96 tokenFeeShare;
+}
+
+struct TokenInfo {
+    address token;
+    uint256 amount;
 }

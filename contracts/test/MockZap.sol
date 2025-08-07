@@ -258,9 +258,7 @@ contract MockZap is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard {
         if (_tokenFee != 0) (totalFeeAmount, referralFeeAmount) = _getTotalAnReferralFeeAmount(_inputToken.amount, _tokenFee, _referralFee);
         uint256 amount = _inputToken.amount - totalFeeAmount;
 
-        if (_inputToken.transferType == InputTransferType.ApproveForSpender)
-            LibAsset.approveERC20(_inputToken.tokenAddress, _inputToken.approveTo, amount);
-            // if (_inputToken.transferType == InputTransferType.ApproveForSpender) LibAsset.maxApproveERC20(_inputToken.tokenAddress, _inputToken.approveTo, amount);
+        if (_inputToken.transferType == InputTransferType.ApproveForSpender) LibAsset.maxApproveERC20(_inputToken.tokenAddress, _inputToken.approveTo, amount);
         else if (_inputToken.transferType == InputTransferType.TransferToSpender) LibAsset.transferERC20(_inputToken.tokenAddress, _inputToken.approveTo, amount);
 
         _transferTokenFee(_inputToken.tokenAddress, _referralAddress, totalFeeAmount, referralFeeAmount);

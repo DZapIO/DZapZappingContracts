@@ -1,6 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 
+enum PermitType {
+    PERMIT, // EIP2612
+    PERMIT2_APPROVE,
+    PERMIT2_WITNESS_TRANSFER,
+    BATCH_PERMIT2_WITNESS_TRANSFER
+}
+
 enum TokenType {
     UNDEFINED,
     NATIVE,
@@ -28,9 +35,9 @@ struct InputToken {
     InputTransferType transferType;
     address tokenAddress;
     address approveTo;
+    uint96 fee;
     uint256 amount;
     uint256 tokenId;
-    uint256 fee;
 }
 
 struct OutputToken {
@@ -38,9 +45,9 @@ struct OutputToken {
     OutputTransferType transferType;
     address tokenAddress;
     address recipient;
+    uint96 fee;
     uint256 minReturn;
     uint256 tokenId;
-    uint256 fee;
 }
 
 struct ZapData {

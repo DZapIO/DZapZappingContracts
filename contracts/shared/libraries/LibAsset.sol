@@ -6,9 +6,8 @@ import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { IERC721 } from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import { IERC1155 } from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import { IPermit2, PermitBatchTransferFrom } from "../../interfaces/IPermit2.sol";
-import { PermitType } from "../Types.sol";
 import { InvalidPermitType } from "../Errors.sol";
-import { InputErc20Tokens } from "../../zap/Types.sol";
+import { InputErc20Tokens, PermitType } from "../../zap/Types.sol";
 import { LibPermit } from "./LibPermit.sol";
 
 import { NativeTransferFailed, NoTransferToNullAddress, InvalidAmount, NullAddrIsNotAValidSpender } from "../Errors.sol";

@@ -21,9 +21,8 @@ export const CONTRACTS = {
 
 export const ERRORS = {
   OwnableUnauthorizedAccount: 'OwnableUnauthorizedAccount',
-  InvalidFeeVault: 'InvalidFeeVault',
   ZeroAddress: 'ZeroAddress',
-  UnauthorizedCaller: 'UnauthorizedCaller',
+  CallerIsNotOwnerOrExecutor: 'CallerIsNotOwnerOrExecutor',
   NoTransferToNullAddress: 'NoTransferToNullAddress',
   ReferralAlreadyAdded: 'ReferralAlreadyAdded',
   InvalidWalletImp: 'InvalidWalletImp',
@@ -57,35 +56,64 @@ export const ERRORS = {
   UnauthorizedCall: 'UnauthorizedCall',
   ReentrancyGuardReentrantCall: 'ReentrancyGuardReentrantCall',
   SelfCallNotAllowed: 'SelfCallNotAllowed',
+
+  CallerIsNotOwnerOrAdmin: 'CallerIsNotOwnerOrAdmin',
+  InvalidProtocolFeeVault: 'InvalidProtocolFeeVault',
+  UniswapPermit2AlreadySet: 'UniswapPermit2AlreadySet',
+  UniswapPermit2ByteCodeMismatch: 'UniswapPermit2ByteCodeMismatch',
+  AdaptersWhitelistingUpdated: 'AdaptersWhitelistingUpdated',
 }
 
 export const EVENTS = {
-  FeeVaultSet: 'FeeVaultSet',
+  ProtocolFeeVaultSet: 'ProtocolFeeVaultSet',
   ZapVerifierSet: 'ZapVerifierSet',
+  Permit2Updated: 'Permit2Updated',
   AdminAdded: 'AdminAdded',
   AdminRemoved: 'AdminRemoved',
-  ReferralAdded: 'ReferralAdded',
+  AdaptersWhitelistingUpdated: 'AdaptersWhitelistingUpdated',
   TokenRecovered: 'TokenRecovered',
   ERC721Recovered: 'ERC721Recovered',
   ERC1155Recovered: 'ERC1155Recovered',
-  DefaultReferralFeeSet: 'DefaultReferralFeeSet',
+  Paused: 'Paused',
+  Unpaused: 'Unpaused',
+  Zapped: 'Zapped',
+  GaslessZapped: 'GaslessZapped',
+
+  CallsWhitelistingUpdated: 'CallsWhitelistingUpdated',
   Executed: 'Executed',
   ExecutedWithDeadline: 'ExecutedWithDeadline',
   WalletDeployed: 'WalletDeployed',
   WalletImpUpdated: 'WalletImpUpdated',
   ExecutorWhitelistingUpdated: 'ExecutorWhitelistingUpdated',
   ValidatorWhitelistingUpdated: 'ValidatorWhitelistingUpdated',
-  Paused: 'Paused',
-  Unpaused: 'Unpaused',
   QuorumUpdated: 'QuorumUpdated',
   DeployAndExecuted: 'DeployAndExecuted',
-  Zapped: 'Zapped',
-  CallsWhitelistingUpdated: 'CallsWhitelistingUpdated',
   WalletPaused: 'WalletPaused',
   WalletFactoryUpdated: 'WalletFactoryUpdated',
 }
 
-export enum FUNCTIONS {
-  execute = 'execute',
-  deployWalletAndExecute = 'deployWalletAndExecute',
+export const FUNCTIONS_NAMES = {
+  execute: 'execute',
+  deployWalletAndExecute: 'deployWalletAndExecute',
+  zap: 'zap(bytes32,bytes,bytes,uint256,address,(address,uint256,bytes)[],(address,(address,uint256,uint256)[]),(address,address,bytes,bool,uint256,(uint8,uint8,address,uint256,uint256)[],(uint8,uint8,address,address,uint96,uint256,uint256)[])[],address[])',
+  zapWithBatchPermitDeposit:
+    'zap(bytes32,bytes,bytes,bytes,uint256,address,((address,uint256)[],uint256,uint256),(address,(address,uint256,uint256)[]),(address,address,bytes,bool,uint256,(uint8,uint8,address,uint256,uint256)[],(uint8,uint8,address,address,uint96,uint256,uint256)[])[],address[])',
+  executeZap:
+    'executeZap(bytes32,bytes,bytes,bytes,uint256,uint256,address,address,(address,uint256,bytes)[],(address,(address,uint256,uint256)[]),(address,uint256)[],(address,address,bytes,bool,uint256,(uint8,uint8,address,uint256,uint256)[],(uint8,uint8,address,address,uint96,uint256,uint256)[])[],address[])',
+  executeZapWithBatchPermitDeposit:
+    'executeZap(bytes32,bytes,bytes,bytes,uint256,address,address,((address,uint256)[],uint256,uint256),(address,(address,uint256,uint256)[]),(address,uint256)[],(address,address,bytes,bool,uint256,(uint8,uint8,address,uint256,uint256)[],(uint8,uint8,address,address,uint96,uint256,uint256)[])[],address[])',
+} as const
+
+export const CONTRACTS_PATH = {
+  DZapZapCore: 'contracts/zap/DZapZapCore.sol:DZapZapCore',
+  DZapWallet: 'contracts/wallet/DZapWallet.sol:DZapWallet',
+  DZapWalletFactory: 'contracts/wallet/DZapWalletFactory.sol:DZapWalletFactory',
+  DZapWalletManager: 'contracts/wallet/DZapWalletManager.sol:DZapWalletManager',
+  DZapExecutor: 'contracts/wallet/DZapExecutor.sol:DZapExecutor',
+  AerodromeClFarmingAdapter:
+    'contracts/adapters/aerodrome/AerodromeClFarmingAdapter.sol:AerodromeClFarmingAdapter',
+  FluidVaultAdapter:
+    'contracts/adapters/fluid/FluidVaultAdapter.sol:FluidVaultAdapter',
+  DisperseEthAdapter:
+    'contracts/adapters/others/DisperseEthAdapter.sol:DisperseEthAdapter',
 }

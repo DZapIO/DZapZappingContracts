@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import { CallFailed } from "../../shared/Errors.sol";
 import { IAerodromeRouter } from "../../interfaces/external/aerodrome/IAerodromeRouter.sol";
 
 struct AddLiquidityData {
@@ -26,17 +25,20 @@ struct SwapData {
     uint256 minReturnAmount;
 }
 
+/// @title AerodromeRouterAdapter
+/// @author DZap
 contract AerodromeRouterAdapter {
     using SafeERC20 for IERC20;
 
-    /**
-        zap 
-            approve for swap
-            swap in adapter
-            take balance 
-            update balance and add liquidity
+    // ============= ERRORS =============
 
-     */
+    error CallFailed(bytes);
+
+    // ============= FUNCTIONS =============
+
+    /// @notice Swaps and adds liquidity
+    /// @param _swapData Swap data
+    /// @param _addLiquidityData Add liquidity data
     function swapAndAddLiquidity(SwapData memory _swapData, AddLiquidityData memory _addLiquidityData) public payable {
         uint256 initialAmount0 = IERC20(_addLiquidityData.token0).balanceOf(address(this));
         uint256 initialAmount1 = IERC20(_addLiquidityData.token1).balanceOf(address(this));
@@ -53,6 +55,16 @@ contract AerodromeRouterAdapter {
         IERC20(_addLiquidityData.token0).approve(_addLiquidityData.router, amount0);
         IERC20(_addLiquidityData.token1).approve(_addLiquidityData.router, amount1);
 
-        IAerodromeRouter(_addLiquidityData.router).addLiquidity(_addLiquidityData.token0, _addLiquidityData.token1, _addLiquidityData.isStablePool, amount0, amount1, _addLiquidityData.amount0Min, _addLiquidityData.amount1Min, _addLiquidityData.recipient, block.timestamp);
+        IAerodromeRouter(_addLiquidityData.router).addLiquidity(
+            _addLiquidityData.token0,
+            _addLiquidityData.token1,
+            _addLiquidityData.isStablePool,
+            amount0,
+            amount1,
+            _addLiquidityData.amount0Min,
+            _addLiquidityData.amount1Min,
+            _addLiquidityData.recipient,
+            block.timestamp
+        );
     }
 }

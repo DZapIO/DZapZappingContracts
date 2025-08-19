@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 struct PermitDetails {
     address token;
@@ -48,7 +48,21 @@ interface IPermit2 {
 
     function allowance(address owner, address token, address spender) external view returns (uint160, uint48, uint48);
 
-    function permitWitnessTransferFrom(PermitTransferFrom memory permit, SignatureTransferDetails calldata transferDetails, address owner, bytes32 witness, string calldata witnessTypeString, bytes calldata signature) external;
+    function permitWitnessTransferFrom(
+        PermitTransferFrom memory permit,
+        SignatureTransferDetails calldata transferDetails,
+        address owner,
+        bytes32 witness,
+        string calldata witnessTypeString,
+        bytes calldata signature
+    ) external;
 
-    function permitWitnessTransferFrom(PermitBatchTransferFrom memory permit, SignatureTransferDetails[] calldata transferDetails, address owner, bytes32 witness, string calldata witnessTypeString, bytes calldata signature) external;
+    function permitWitnessTransferFrom(
+        PermitBatchTransferFrom memory permit,
+        SignatureTransferDetails[] calldata transferDetails,
+        address owner,
+        bytes32 witness,
+        string calldata witnessTypeString,
+        bytes calldata signature
+    ) external;
 }

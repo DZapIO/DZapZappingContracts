@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import { IERC1155 } from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
-import { IERC20Metadata } from "@openzeppelin/contracts/interfaces/IERC20Metadata.sol";
 import { ERC1155Holder } from "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 
 contract MockErc1155Dex is ERC1155Holder {
@@ -43,10 +42,18 @@ contract MockErc1155Dex is ERC1155Holder {
         } else {
             IERC20(_token).safeTransferFrom(msg.sender, address(this), totalPrice);
         }
+
         IERC1155(_nftAddress).safeTransferFrom(address(this), _recipient, _nftId, _amount, "");
     }
 
-    function swapNftToToken(address _nftAddress, address _token, address _recipient, uint256 _nftId, uint256 _amount, bool _alreadyTransfered) external {
+    function swapNftToToken(
+        address _nftAddress,
+        address _token,
+        address _recipient,
+        uint256 _nftId,
+        uint256 _amount,
+        bool _alreadyTransfered
+    ) external {
         uint256 price = nftPrice[_nftAddress][_token];
         require(price > 0, "Price Not set");
 
@@ -64,6 +71,23 @@ contract MockErc1155Dex is ERC1155Holder {
         } else {
             IERC20(_token).transfer(_recipient, totalPrice);
         }
+    }
+
+    function swapNftToNft(
+        address _srcNftAddress,
+        address _destNftAddress,
+        address _recipient,
+        uint256 _srcNftId,
+        uint256 _destNftId,
+        uint256 _amount,
+        bool _alreadyTransfered
+    ) external {
+        if (_alreadyTransfered) {
+            require(IERC1155(_srcNftAddress).balanceOf(address(this), _srcNftId) > _amount, "NFT not transfered");
+        } else {
+            IERC1155(_srcNftAddress).safeTransferFrom(msg.sender, address(this), _srcNftId, _amount, "");
+        }
+        IERC1155(_destNftAddress).safeTransferFrom(address(this), _recipient, _destNftId, _amount, "");
     }
 
     // -------------------------------

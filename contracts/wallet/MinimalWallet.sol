@@ -7,14 +7,12 @@ import { IERC1155 } from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import { ERC721Holder } from "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 import { ERC1155Holder } from "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 
-import { InvalidAccount } from "../shared/Errors.sol";
-import { TokenType, TokenTransfer, TokenApproval } from "./Types.sol";
-import { ZeroAddress } from "../shared/Errors.sol";
-
 import { IMinimalWallet } from "../interfaces/IMinimalWallet.sol";
-import { OwnableUnauthorizedAccount, InvalidArrayLength, WithdrawFailed } from "../shared/Errors.sol";
 
-/* From enso base wallet : https://github.com/EnsoBuild/shortcuts-contracts/blob/a575b19e02139137d1056514112087bb80f8ce96/contracts/wallet/MinimalWallet.sol */
+import { TokenType, TokenTransfer, TokenApproval } from "./Types.sol";
+import { OwnableUnauthorizedAccount, InvalidArrayLength, WithdrawFailed, InvalidAccount, ZeroAddress } from "./Errors.sol";
+
+/* Refrence : Enso base wallet : https://github.com/EnsoBuild/shortcuts-contracts/blob/a575b19e02139137d1056514112087bb80f8ce96/contracts/wallet/MinimalWallet.sol */
 abstract contract MinimalWallet is ERC721Holder, ERC1155Holder, IMinimalWallet {
     using SafeERC20 for IERC20;
 

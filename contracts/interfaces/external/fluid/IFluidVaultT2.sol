@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 interface IFluidVaultT2 {
     /// @notice Performs operations on a vault position with perfect collateral shares

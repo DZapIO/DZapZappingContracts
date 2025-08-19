@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 // https://github.com/transmissions11/solmate/blob/main/src/tokens/ERC20.sol
 /// @notice Modern and gas efficient ERC20 + EIP-2612 implementation.
@@ -106,15 +106,7 @@ abstract contract ERC20 {
                              EIP-2612 LOGIC
     //////////////////////////////////////////////////////////////*/
 
-    function permit(
-        address owner,
-        address spender,
-        uint256 value,
-        uint256 deadline,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) public virtual {
+    function permit(address owner, address spender, uint256 value, uint256 deadline, uint8 v, bytes32 r, bytes32 s) public virtual {
         require(deadline >= block.timestamp, "PERMIT_DEADLINE_EXPIRED");
 
         // Unchecked because the only math done is incrementing
@@ -127,9 +119,7 @@ abstract contract ERC20 {
                         DOMAIN_SEPARATOR(),
                         keccak256(
                             abi.encode(
-                                keccak256(
-                                    "Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"
-                                ),
+                                keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"),
                                 owner,
                                 spender,
                                 value,
@@ -214,32 +204,13 @@ interface IAllowanceTransfer {
     error ExcessiveInvalidation();
 
     /// @notice Emits an event when the owner successfully invalidates an ordered nonce.
-    event NonceInvalidation(
-        address indexed owner,
-        address indexed token,
-        address indexed spender,
-        uint48 newNonce,
-        uint48 oldNonce
-    );
+    event NonceInvalidation(address indexed owner, address indexed token, address indexed spender, uint48 newNonce, uint48 oldNonce);
 
     /// @notice Emits an event when the owner successfully sets permissions on a token for the spender.
-    event Approval(
-        address indexed owner,
-        address indexed token,
-        address indexed spender,
-        uint160 amount,
-        uint48 expiration
-    );
+    event Approval(address indexed owner, address indexed token, address indexed spender, uint160 amount, uint48 expiration);
 
     /// @notice Emits an event when the owner successfully sets permissions using a permit signature on a token for the spender.
-    event Permit(
-        address indexed owner,
-        address indexed token,
-        address indexed spender,
-        uint160 amount,
-        uint48 expiration,
-        uint48 nonce
-    );
+    event Permit(address indexed owner, address indexed token, address indexed spender, uint160 amount, uint48 expiration, uint48 nonce);
 
     /// @notice Emits an event when the owner sets the allowance back to 0 with the lockdown function.
     event Lockdown(address indexed owner, address token, address spender);
@@ -373,16 +344,7 @@ interface IDAIPermit {
     /// @param v Must produce valid secp256k1 signature from the owner along with r and s.
     /// @param r Must produce valid secp256k1 signature from the owner along with v and s.
     /// @param s Must produce valid secp256k1 signature from the owner along with r and v.
-    function permit(
-        address holder,
-        address spender,
-        uint256 nonce,
-        uint256 expiry,
-        bool allowed,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) external;
+    function permit(address holder, address spender, uint256 nonce, uint256 expiry, bool allowed, uint8 v, bytes32 r, bytes32 s) external;
 }
 
 interface IERC1271 {
@@ -527,12 +489,7 @@ library Allowance {
     /// @notice Sets the allowed amount, expiry, and nonce of the spender's permissions on owner's token.
     /// @dev Nonce is incremented.
     /// @dev If the inputted expiration is 0, the stored expiration is set to block.timestamp
-    function updateAll(
-        IAllowanceTransfer.PackedAllowance storage allowed,
-        uint160 amount,
-        uint48 expiration,
-        uint48 nonce
-    ) internal {
+    function updateAll(IAllowanceTransfer.PackedAllowance storage allowed, uint160 amount, uint48 expiration, uint48 nonce) internal {
         uint48 storedNonce;
         unchecked {
             storedNonce = nonce + 1;
@@ -548,11 +505,7 @@ library Allowance {
 
     /// @notice Sets the allowed amount and expiry of the spender's permissions on owner's token.
     /// @dev Nonce does not need to be incremented.
-    function updateAmountAndExpiration(
-        IAllowanceTransfer.PackedAllowance storage allowed,
-        uint160 amount,
-        uint48 expiration
-    ) internal {
+    function updateAmountAndExpiration(IAllowanceTransfer.PackedAllowance storage allowed, uint160 amount, uint48 expiration) internal {
         // If the inputted expiration is 0, the allowance only lasts the duration of the block.
         allowed.expiration = expiration == 0 ? uint48(block.timestamp) : expiration;
         allowed.amount = amount;
@@ -565,8 +518,7 @@ library Allowance {
 }
 
 library PermitHash {
-    bytes32 public constant _PERMIT_DETAILS_TYPEHASH =
-        keccak256("PermitDetails(address token,uint160 amount,uint48 expiration,uint48 nonce)");
+    bytes32 public constant _PERMIT_DETAILS_TYPEHASH = keccak256("PermitDetails(address token,uint160 amount,uint48 expiration,uint48 nonce)");
 
     bytes32 public constant _PERMIT_SINGLE_TYPEHASH =
         keccak256(
@@ -601,8 +553,7 @@ library PermitHash {
     function hash(IAllowanceTransfer.PermitSingle memory permitSingle) internal view returns (bytes32) {
         bytes32 permitHash = _hashPermitDetails(permitSingle.details);
 
-        return
-            keccak256(abi.encode(_PERMIT_SINGLE_TYPEHASH, permitHash, permitSingle.spender, permitSingle.sigDeadline));
+        return keccak256(abi.encode(_PERMIT_SINGLE_TYPEHASH, permitHash, permitSingle.spender, permitSingle.sigDeadline));
     }
 
     function hash(IAllowanceTransfer.PermitBatch memory permitBatch) internal pure returns (bytes32) {
@@ -611,29 +562,12 @@ library PermitHash {
         for (uint256 i = 0; i < numPermits; ++i) {
             permitHashes[i] = _hashPermitDetails(permitBatch.details[i]);
         }
-        return
-            keccak256(
-                abi.encode(
-                    _PERMIT_BATCH_TYPEHASH,
-                    keccak256(abi.encodePacked(permitHashes)),
-                    permitBatch.spender,
-                    permitBatch.sigDeadline
-                )
-            );
+        return keccak256(abi.encode(_PERMIT_BATCH_TYPEHASH, keccak256(abi.encodePacked(permitHashes)), permitBatch.spender, permitBatch.sigDeadline));
     }
 
     function hash(ISignatureTransfer.PermitTransferFrom memory permit) internal view returns (bytes32) {
         bytes32 tokenPermissionsHash = _hashTokenPermissions(permit.permitted);
-        return
-            keccak256(
-                abi.encode(
-                    _PERMIT_TRANSFER_FROM_TYPEHASH,
-                    tokenPermissionsHash,
-                    msg.sender,
-                    permit.nonce,
-                    permit.deadline
-                )
-            );
+        return keccak256(abi.encode(_PERMIT_TRANSFER_FROM_TYPEHASH, tokenPermissionsHash, msg.sender, permit.nonce, permit.deadline));
     }
 
     function hash(ISignatureTransfer.PermitBatchTransferFrom memory permit) internal view returns (bytes32) {
@@ -664,8 +598,7 @@ library PermitHash {
         bytes32 typeHash = keccak256(abi.encodePacked(_PERMIT_TRANSFER_FROM_WITNESS_TYPEHASH_STUB, witnessTypeString));
 
         bytes32 tokenPermissionsHash = _hashTokenPermissions(permit.permitted);
-        return
-            keccak256(abi.encode(typeHash, tokenPermissionsHash, msg.sender, permit.nonce, permit.deadline, witness));
+        return keccak256(abi.encode(typeHash, tokenPermissionsHash, msg.sender, permit.nonce, permit.deadline, witness));
     }
 
     function hashWithWitness(
@@ -673,9 +606,7 @@ library PermitHash {
         bytes32 witness,
         string calldata witnessTypeString
     ) internal view returns (bytes32) {
-        bytes32 typeHash = keccak256(
-            abi.encodePacked(_PERMIT_BATCH_WITNESS_TRANSFER_FROM_TYPEHASH_STUB, witnessTypeString)
-        );
+        bytes32 typeHash = keccak256(abi.encodePacked(_PERMIT_BATCH_WITNESS_TRANSFER_FROM_TYPEHASH_STUB, witnessTypeString));
 
         uint256 numPermitted = permit.permitted.length;
         bytes32[] memory tokenPermissionHashes = new bytes32[](numPermitted);
@@ -685,25 +616,14 @@ library PermitHash {
         }
 
         return
-            keccak256(
-                abi.encode(
-                    typeHash,
-                    keccak256(abi.encodePacked(tokenPermissionHashes)),
-                    msg.sender,
-                    permit.nonce,
-                    permit.deadline,
-                    witness
-                )
-            );
+            keccak256(abi.encode(typeHash, keccak256(abi.encodePacked(tokenPermissionHashes)), msg.sender, permit.nonce, permit.deadline, witness));
     }
 
     function _hashPermitDetails(IAllowanceTransfer.PermitDetails memory details) private pure returns (bytes32) {
         return keccak256(abi.encode(_PERMIT_DETAILS_TYPEHASH, details));
     }
 
-    function _hashTokenPermissions(
-        ISignatureTransfer.TokenPermissions memory permitted
-    ) private pure returns (bytes32) {
+    function _hashTokenPermissions(ISignatureTransfer.TokenPermissions memory permitted) private pure returns (bytes32) {
         return keccak256(abi.encode(_TOKEN_PERMISSIONS_TYPEHASH, permitted));
     }
 }
@@ -760,16 +680,7 @@ library Permit2Lib {
     /// @param v Must produce valid secp256k1 signature from the owner along with r and s.
     /// @param r Must produce valid secp256k1 signature from the owner along with v and s.
     /// @param s Must produce valid secp256k1 signature from the owner along with r and v.
-    function permit2(
-        ERC20 token,
-        address owner,
-        address spender,
-        uint256 amount,
-        uint256 deadline,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) internal {
+    function permit2(ERC20 token, address owner, address spender, uint256 amount, uint256 deadline, uint8 v, bytes32 r, bytes32 s) internal {
         // Generate calldata for a call to DOMAIN_SEPARATOR on the token.
         bytes memory inputData = abi.encodeWithSelector(ERC20.DOMAIN_SEPARATOR.selector);
 
@@ -1013,8 +924,7 @@ contract EIP712 {
     uint256 private immutable _CACHED_CHAIN_ID;
 
     bytes32 private constant _HASHED_NAME = keccak256("Permit2");
-    bytes32 private constant _TYPE_HASH =
-        keccak256("EIP712Domain(string name,uint256 chainId,address verifyingContract)");
+    bytes32 private constant _TYPE_HASH = keccak256("EIP712Domain(string name,uint256 chainId,address verifyingContract)");
 
     constructor() {
         _CACHED_CHAIN_ID = block.chainid;
@@ -1024,10 +934,7 @@ contract EIP712 {
     /// @notice Returns the domain separator for the current chain.
     /// @dev Uses cached version if chainid and address are unchanged from construction.
     function DOMAIN_SEPARATOR() public view returns (bytes32) {
-        return
-            block.chainid == _CACHED_CHAIN_ID
-                ? _CACHED_DOMAIN_SEPARATOR
-                : _buildDomainSeparator(_TYPE_HASH, _HASHED_NAME);
+        return block.chainid == _CACHED_CHAIN_ID ? _CACHED_DOMAIN_SEPARATOR : _buildDomainSeparator(_TYPE_HASH, _HASHED_NAME);
     }
 
     /// @notice Builds a domain separator using the current chainId and contract address.
@@ -1201,13 +1108,7 @@ contract SignatureTransfer is ISignatureTransfer, EIP712 {
         string calldata witnessTypeString,
         bytes calldata signature
     ) external {
-        _permitTransferFrom(
-            permit,
-            transferDetails,
-            owner,
-            permit.hashWithWitness(witness, witnessTypeString),
-            signature
-        );
+        _permitTransferFrom(permit, transferDetails, owner, permit.hashWithWitness(witness, witnessTypeString), signature);
     }
 
     /// @notice Transfers a token using a signed permit message.
@@ -1254,13 +1155,7 @@ contract SignatureTransfer is ISignatureTransfer, EIP712 {
         string calldata witnessTypeString,
         bytes calldata signature
     ) external {
-        _permitTransferFrom(
-            permit,
-            transferDetails,
-            owner,
-            permit.hashWithWitness(witness, witnessTypeString),
-            signature
-        );
+        _permitTransferFrom(permit, transferDetails, owner, permit.hashWithWitness(witness, witnessTypeString), signature);
     }
 
     /// @notice Transfers tokens using a signed permit messages

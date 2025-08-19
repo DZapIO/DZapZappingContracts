@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
 import { LibValidator } from "./../shared/libraries/LibValidator.sol";
 
 import { IDZapWalletManager } from "../interfaces/IDZapWalletManager.sol";
-import { ZeroAddress, QuorumTooLow } from "../shared/Errors.sol";
- 
+import { ZeroAddress, QuorumTooLow } from "./Errors.sol";
+
 /*  
 ---------------------------------------------------------
 ---------------------------------------------------------
@@ -82,11 +82,11 @@ contract DZapWalletManager is Ownable, IDZapWalletManager {
 
     function updateWalletFactory(address _newWalletFactory) external onlyOwner {
         require(_newWalletFactory != address(0), ZeroAddress());
-        
+
         walletFactory = _newWalletFactory;
         emit WalletFactoryUpdated(_newWalletFactory);
     }
-   
+
     function setWalletPaused(bool _paused) external onlyOwner {
         walletPaused = _paused;
         emit WalletPaused(_paused);

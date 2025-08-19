@@ -1,21 +1,19 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { ERC721Holder } from "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
-import { ERC1155Holder } from "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 import { LibAsset } from "../shared/libraries/LibAsset.sol";
 import { LibPermit } from "../shared/libraries/LibPermit.sol";
-import { FullMath } from "../shared/libraries/FullMath.sol";
 
 import { IDZapZapCore } from "../interfaces/IDZapZapCore.sol";
-import { IPermit2, PermitBatchTransferFrom } from "../interfaces/IPermit2.sol";
+import { PermitBatchTransferFrom } from "../interfaces/IPermit2.sol";
 
-import { ZapData, TokenType, InputTransferType, OutputTransferType, InputToken, OutputToken, InputErc20Tokens, ReferralFeeInfo, TokenType, TokenInfo } from "./Types.sol";
-import { InvalidFeeVault, InvalidTokenOwner, InvalidReturnAmount, ZeroAddress, InvalidInputLength, InvalidOutputLength, ReferralAlreadyAdded, InvalidOutputType, NoTransferToNullAddress, UnauthorizedCaller, UnauthorizedSigner, FeeTooHigh, SenderCannotBeReferral, UnauthorizedCall, SigDeadlineExpired, MaxTokenFeeTooHigh, TokenFeeExceedsMax, ZapExecutionFailed, UniswapPermit2NotDeployed, UniswapPermit2AlreadySet } from "../shared/Errors.sol";
+import { DZapCoreBase } from "./DZapCoreBase.sol";
+import { DZapExecution } from "./DZapExecution.sol";
+
+import { FeeConfig, ZapData, InputErc20Tokens, TokenInfo } from "./Types.sol";
+import { NoTransferToNullAddress } from "./Errors.sol";
 
 /*  
 ---------------------------------------------------------
@@ -28,7 +26,7 @@ import { InvalidFeeVault, InvalidTokenOwner, InvalidReturnAmount, ZeroAddress, I
 | $$  | $$   /$$/   | $$__  $$| $$____/ 
 | $$  | $$  /$$/    | $$  | $$| $$      
 | $$$$$$$/ /$$$$$$$$| $$  | $$| $$      
-|_______/ |________/|__/  |__/|__/      
+|_______/ |________/|__/  |__/|__/       
 
 
 Author: DZap <https://dzap.io> (https://x.com/dzap_io)
@@ -37,516 +35,191 @@ Author: DZap <https://dzap.io> (https://x.com/dzap_io)
 ---------------------------------------------------------
 */
 
-contract DZapZapCore is Ownable, ERC721Holder, ERC1155Holder, ReentrancyGuard, IDZapZapCore {
-    // -------------STATE-------------
+/// @title DZapZapCore
+/// @notice Main contract for executing zap transactions across protocols
+/// @dev Inherits from modular abstract contracts for clean separation of concerns
+contract DZapZapCore is ReentrancyGuard, DZapExecution, IDZapZapCore {
+    // ============= CONSTRUCTOR =============
 
-    address public feeVault;
-    address public zapVerifier;
-    address public permit2;
-    uint96 public defaultReferralNativeFeeShare;
-    uint96 public defaultReferralTokenFeeShare;
-    address public immutable UNISWAP_PERMIT2;
+    /// @param _owner Owner of the contract
+    /// @param _protocolFeeVault Address where protocol fees are sent
+    /// @param _zapVerifier Address of the zap verifier
+    /// @param _permit2 Address of the permit2 contract
+    /// @param _uniswapPemit2 Address of the uniswap permit2 contract
+    /// @param _uniswapPermit2BytecodeHash Hash of the uniswap permit2 bytecode
+    /// @param _salt Random salt for contract creation
+    constructor(
+        address _owner,
+        address _protocolFeeVault,
+        address _zapVerifier,
+        address _permit2,
+        address _uniswapPemit2,
+        bytes32 _uniswapPermit2BytecodeHash,
+        bytes32 _salt
+    ) DZapCoreBase(_owner, _protocolFeeVault, _zapVerifier, _permit2, _uniswapPemit2, _uniswapPermit2BytecodeHash, _salt) {}
 
-    uint256 public immutable MAX_TOKEN_FEE;
-    bytes32 private immutable _DOMAIN_SEPARATOR;
-    uint256 private constant _BPS_DENOMINATOR = 1e6; // 4 basis points
+    // ============= EXTERNAL FUNCTIONS =============
 
-    mapping(address referrer => ReferralFeeInfo feeInfo) public referralFeeInfo;
-    mapping(address user => uint256 nonce) public nonce;
-    mapping(address admin => bool isAdmin) public admins;
-    mapping(address callTo => bool isWhitelisted) public allowedCalls;
+    /// @inheritdoc IDZapZapCore
+    function zap(
+        bytes32 _transactionId,
+        bytes calldata _crosschainData,
+        bytes calldata _zapVerificationSignature,
+        uint256 _deadline,
+        address _dustReceiver,
+        InputErc20Tokens[] calldata _inputTokens,
+        FeeConfig calldata _feeConfig,
+        ZapData[] calldata _zapData,
+        address[] calldata _sweepDust
+    ) external payable nonReentrant whenNotPaused refundExcessNative(_dustReceiver) {
+        require(_dustReceiver != address(0), NoTransferToNullAddress());
+        bytes32 zapDataHash = keccak256(abi.encode(_zapData));
+        bytes32 feeDataHash = keccak256(abi.encode(_feeConfig));
 
-    string private constant _DOMAIN_NAME = "DZapVerifier";
-    string private constant _ZAP_VERSION = "1";
-    string internal constant _GASLESS_WITNESS_TYPE_STRING = "DZapGaslessZapWitness witness)DZapGaslessZapWitness(bytes32 txId,address user,address referral,address dustReciever,bytes32 executorFeeHash,bytes32 zapData, bytes32 sweepData)TokenPermissions(address token,uint256 amount)";
-    string internal constant _CROSSCHAIN_GASLESS_WITNESS_TYPE_STRING = "DZapGaslessCrossZapWitness witness)DZapGaslessCrossZapWitness(bytes32 txId,bytes32 vHash,address user,address referral,address dustReciever,bytes32 executorFeeHash,bytes32 zapData, bytes32 sweepData)TokenPermissions(address token,uint256 amount)";
+        _handleZapVerification(_transactionId, zapDataHash, feeDataHash, msg.sender, _deadline, _zapVerificationSignature);
 
-    bytes32 internal constant _GASLESS_WITNESS_TYPEHASH = keccak256("DZapGaslessZapWitness(bytes32 txId,address user,address referral,address dustReciever,bytes32 executorFeeHash,bytes32 zapData, bytes32 sweepData)");
-    bytes32 internal constant _CROSSCHAIN_GASLESS_WITNESS_TYPEHASH = keccak256("DZapGaslessCrossZapWitness(bytes32 txId,bytes32 vHash,address user,address referral,address dustReciever,bytes32 executorFeeHash,bytes32 zapData, bytes32 sweepData)");
-    bytes32 private constant _SIGNED_GASLESS_DATA_TYPEHASH = keccak256("DZapGaslessZapData(bytes32 txId,address user,address referral,address dustReciever,uint256 nonce,uint256 deadline,bytes32 zapData,bytes32 sweepDataHash)");
-    bytes32 private constant _CROSSCHAIN_SIGNED_GASLESS_DATA_TYPEHASH = keccak256("DZapGaslessCrossZapData(bytes32 txId,bytes32 vHash,address user,address referral,address dustReciever,uint256 nonce,uint256 deadline,bytes32 zapData,bytes32 sweepDataHash)");
-    bytes32 private constant _SIGNED_ZAP_DATA_TYPEHASH = keccak256("DZapSignedZapData(bytes32 txId,address user,address referral,uint256 nonce,uint256 deadline,bytes32 data)");
-    bytes32 private constant _DOMAIN_TYPEHASH = keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract,bytes32 salt)");
+        LibAsset.depositBatch(permit2, msg.sender, _inputTokens);
 
-    // -------------MODIFIERS-------------
+        _handleZap(_zapData, msg.sender);
 
-    modifier onlyOwnerOrAdmin() {
-        require(msg.sender == owner() || admins[msg.sender], UnauthorizedCaller());
-        _;
+        _processFee(_feeConfig);
+
+        _handleSweepTokens(_sweepDust, _dustReceiver);
+
+        emit Zapped(_transactionId, msg.sender, _feeConfig.integrator, _crosschainData);
     }
 
-    modifier refundExcessNative(address _refundee) {
-        uint256 initialBalance = LibAsset.selfNativeBalance() - msg.value;
-        _;
-        uint256 finalBalance = LibAsset.selfNativeBalance();
-        if (finalBalance > initialBalance) LibAsset.transferNativeToken(_refundee, finalBalance - initialBalance);
+    /// @inheritdoc IDZapZapCore
+    function zap(
+        bytes32 _transactionId,
+        bytes calldata _crosschainData,
+        bytes calldata _zapVerificationSignature,
+        bytes calldata _batchDepositSignature,
+        uint256 _deadline,
+        address _dustReceiver,
+        PermitBatchTransferFrom calldata _tokenDepositDetails,
+        FeeConfig calldata _feeConfig,
+        ZapData[] calldata _zapData,
+        address[] calldata _sweepDust
+    ) external payable nonReentrant whenNotPaused refundExcessNative(_dustReceiver) {
+        require(_dustReceiver != address(0), NoTransferToNullAddress());
+        bytes32 zapDataHash = keccak256(abi.encode(_zapData));
+        bytes32 feeDataHash = keccak256(abi.encode(_feeConfig));
+
+        _handleZapVerification(_transactionId, zapDataHash, feeDataHash, msg.sender, _deadline, _zapVerificationSignature);
+
+        LibAsset.depositBatch(permit2, msg.sender, _tokenDepositDetails, _batchDepositSignature);
+
+        _handleZap(_zapData, msg.sender);
+
+        _processFee(_feeConfig);
+
+        _handleSweepTokens(_sweepDust, _dustReceiver);
+
+        emit Zapped(_transactionId, msg.sender, _feeConfig.integrator, _crosschainData);
     }
 
-    // -------------CONSTRUCTORS-------------
+    /// @inheritdoc IDZapZapCore
+    function executeZap(
+        bytes32 _transactionId,
+        bytes calldata _crosschainData,
+        bytes calldata _zapVerificationSignature,
+        bytes calldata _userIntentSignature,
+        uint256 _zapDeadline,
+        uint256 _userIntentDeadline,
+        address _user,
+        address _dustReceiver,
+        InputErc20Tokens[] calldata _inputTokens,
+        FeeConfig calldata _feeConfig,
+        TokenInfo[] calldata _executorFeeInfo,
+        ZapData[] calldata _zapData,
+        address[] calldata _sweepDust
+    ) external payable nonReentrant whenNotPaused refundExcessNative(_dustReceiver) {
+        require(_dustReceiver != address(0), NoTransferToNullAddress());
+        bytes32 zapDataHash = keccak256(abi.encode(_zapData));
+        bytes32 feeDataHash = keccak256(abi.encode(_feeConfig));
 
-    constructor(address _owner, address _feeVault, address _zapVerifier, address _permit2, address _uniswapPemit2, uint96 _defaultReferralNativeFeeShare, uint96 _defaultReferralTokenFeeShare, uint256 _maxTokenFee, bytes32 _salt) Ownable(_owner) {
-        require(_zapVerifier != address(0) && _permit2 != address(0), ZeroAddress());
-        require(_feeVault != address(0) && _feeVault != address(this), InvalidFeeVault());
-        require(_defaultReferralNativeFeeShare < _BPS_DENOMINATOR && _defaultReferralTokenFeeShare < _BPS_DENOMINATOR, FeeTooHigh());
-        require(_maxTokenFee < _BPS_DENOMINATOR, MaxTokenFeeTooHigh());
+        _handleZapVerification(_transactionId, zapDataHash, feeDataHash, _user, _zapDeadline, _zapVerificationSignature);
 
-        feeVault = _feeVault;
-        zapVerifier = _zapVerifier;
-        MAX_TOKEN_FEE = _maxTokenFee;
-        UNISWAP_PERMIT2 = _uniswapPemit2; // 0x000000000022D473030F116dDEE9F6B43aC78BA3
-        defaultReferralNativeFeeShare = _defaultReferralNativeFeeShare;
-        defaultReferralTokenFeeShare = _defaultReferralTokenFeeShare;
-        _DOMAIN_SEPARATOR = keccak256(abi.encode(_DOMAIN_TYPEHASH, keccak256(bytes(_DOMAIN_NAME)), keccak256(bytes(_ZAP_VERSION)), block.chainid, address(this), _salt));
-    }
+        _handleGaslessVerification(
+            _transactionId,
+            zapDataHash,
+            feeDataHash,
+            keccak256(abi.encode(_executorFeeInfo)),
+            keccak256(_crosschainData),
+            keccak256(abi.encode(_sweepDust)),
+            _user,
+            _dustReceiver,
+            _userIntentDeadline,
+            _userIntentSignature
+        );
 
-    // -------------RESTRICTED-------------
+        LibAsset.depositBatch(permit2, _user, _inputTokens);
 
-    function setDefaultReferralFee(uint96 _defaultReferralNativeFeeShare, uint96 _defaultReferralTokenFeeShare) external onlyOwner {
-        require(_defaultReferralNativeFeeShare < _BPS_DENOMINATOR && _defaultReferralTokenFeeShare < _BPS_DENOMINATOR, FeeTooHigh());
-        defaultReferralNativeFeeShare = _defaultReferralNativeFeeShare;
-        defaultReferralTokenFeeShare = _defaultReferralTokenFeeShare;
-        emit DefaultReferralFeeSet(_defaultReferralNativeFeeShare, _defaultReferralTokenFeeShare);
-    }
+        _handleZap(_zapData, _user);
 
-    function setFeeVault(address _feeVault) external onlyOwner {
-        require(_feeVault != address(0) && _feeVault != address(this), InvalidFeeVault());
-        feeVault = _feeVault;
-        emit FeeVaultSet(_feeVault);
-    }
+        _processFee(_feeConfig);
 
-    function updateToUniswapPermit2() external onlyOwner {
-        if (permit2 == UNISWAP_PERMIT2) revert UniswapPermit2AlreadySet();
-        if (UNISWAP_PERMIT2.code.length == 0) revert UniswapPermit2NotDeployed();
-
-        address tempAddr = address(this);
-        try IPermit2(UNISWAP_PERMIT2).allowance(tempAddr, tempAddr, tempAddr) {
-            permit2 = UNISWAP_PERMIT2;
-            emit Permit2Updated();
-        } catch {
-            revert UniswapPermit2NotDeployed();
-        }
-    }
-
-    function setVerifier(address _verifier) external onlyOwner {
-        require(_verifier != address(0), ZeroAddress());
-        zapVerifier = _verifier;
-        emit ZapVerifierSet(_verifier);
-    }
-
-    function setCallsWhitelisting(address[] memory _callTos, bool _whitelisted) external onlyOwner {
-        uint256 length = _callTos.length;
-        for (uint256 i; i < length; ++i) {
-            require(_callTos[i] != address(0), ZeroAddress());
-            allowedCalls[_callTos[i]] = _whitelisted;
-        }
-        emit CallsWhitelistingUpdated(_callTos, _whitelisted);
-    }
-
-    function addAdmin(address _account) external onlyOwner {
-        admins[_account] = true;
-        emit AdminAdded(_account);
-    }
-
-    function removeAdmin(address _account) external onlyOwner {
-        admins[_account] = false;
-        emit AdminRemoved(_account);
-    }
-
-    function addReferral(address _referral, uint96 _nativeFeeShare, uint96 _tokenFeeShare) external onlyOwnerOrAdmin {
-        require(_referral != address(0), ZeroAddress());
-        require(_nativeFeeShare < _BPS_DENOMINATOR && _tokenFeeShare < _BPS_DENOMINATOR, FeeTooHigh());
-        referralFeeInfo[_referral] = ReferralFeeInfo({ nativeFeeShare: _nativeFeeShare, tokenFeeShare: _tokenFeeShare });
-        emit ReferralAdded(_referral);
-    }
-
-    function recoverToken(address _token, address _recipient, uint256 _amount) external onlyOwner {
-        require(_recipient != address(0), NoTransferToNullAddress());
-        LibAsset.transferToken(_token, _recipient, _amount);
-        emit TokenRecovered(_token, _recipient, _amount);
-    }
-
-    function recoverERC721(address _token, address _recipient, uint256 _id) external onlyOwner {
-        require(_recipient != address(0), NoTransferToNullAddress());
-        LibAsset.transferERC721(_token, _recipient, _id);
-        emit ERC721Recovered(_token, _recipient, _id);
-    }
-
-    function recoverERC1155(address _token, address _recipient, uint256[] calldata _ids, uint256[] calldata _amounts) external onlyOwner {
-        require(_recipient != address(0), NoTransferToNullAddress());
-        LibAsset.transferBatchERC1155(_token, _recipient, _ids, _amounts);
-        emit ERC1155Recovered(_token, _recipient, _ids, _amounts);
-    }
-
-    // -------------EXTERNAL-------------
-
-    function registerAsReferral() external {
-        require(referralFeeInfo[msg.sender].nativeFeeShare == 0 || referralFeeInfo[msg.sender].tokenFeeShare == 0, ReferralAlreadyAdded());
-        referralFeeInfo[msg.sender] = ReferralFeeInfo({ nativeFeeShare: defaultReferralNativeFeeShare, tokenFeeShare: defaultReferralTokenFeeShare });
-        emit ReferralAdded(msg.sender);
-    }
-
-    function zap(bytes calldata _transactionId, bytes calldata _data, bytes calldata _signature, uint256 _deadline, address _referral, address _dustReciever, InputErc20Tokens[] calldata _inputTokens, address[] calldata _sweepDust) external payable nonReentrant refundExcessNative(_dustReciever) {
-        require(_dustReciever != address(0), NoTransferToNullAddress());
-        handleZapVerification(keccak256(_transactionId), msg.sender, _referral, _deadline, _data, _signature);
-        LibAsset.depositErc20Batch(permit2, msg.sender, _inputTokens);
-        _handleZap(_data, _referral);
-        _handleSweepTokens(_sweepDust, _dustReciever);
-        emit Zapped(msg.sender, _transactionId);
-    }
-
-    function zap(bytes calldata _transactionId, bytes calldata _data, bytes calldata _zapVerificationSignature, bytes calldata _batchDepositSignature, uint256 _deadline, address _referral, address _dustReciever, PermitBatchTransferFrom calldata _tokenDepositDetails, address[] calldata _sweepDust) external payable nonReentrant refundExcessNative(_dustReciever) {
-        require(_dustReciever != address(0), NoTransferToNullAddress());
-        handleZapVerification(keccak256(_transactionId), msg.sender, _referral, _deadline, _data, _zapVerificationSignature);
-        LibAsset.depositErc20Batch(permit2, msg.sender, _tokenDepositDetails, _batchDepositSignature);
-        _handleZap(_data, _referral);
-        _handleSweepTokens(_sweepDust, _dustReciever);
-        emit Zapped(msg.sender, _transactionId);
-    }
-
-    function crossZap(bytes calldata _transactionId, bytes32 _vHash, bytes calldata _data, bytes calldata _signature, uint256 _deadline, address _referral, address _refundee, address _dustReciever, InputErc20Tokens[] calldata _inputTokens, address[] calldata _sweepDust) external payable nonReentrant refundExcessNative(_dustReciever) {
-        require(_dustReciever != address(0), NoTransferToNullAddress());
-        handleZapVerification(keccak256(_transactionId), msg.sender, _referral, _deadline, _data, _signature);
-        LibAsset.depositErc20Batch(permit2, msg.sender, _inputTokens);
-        _handleZap(_data, _referral);
-        _handleSweepTokens(_sweepDust, _dustReciever);
-        emit CrossZapped(msg.sender, _transactionId, _vHash, _refundee);
-    }
-
-    function crossZap(bytes32 _vHash, bytes calldata _transactionId, bytes calldata _data, bytes calldata _zapVerificationSignature, bytes calldata _batchDepositSignature, uint256 _deadline, address _referral, address _refundee, address _dustReciever, PermitBatchTransferFrom calldata _tokenDepositDetails, address[] calldata _sweepDust) external payable nonReentrant refundExcessNative(_dustReciever) {
-        require(_dustReciever != address(0), NoTransferToNullAddress());
-        handleZapVerification(keccak256(_transactionId), msg.sender, _referral, _deadline, _data, _zapVerificationSignature);
-        LibAsset.depositErc20Batch(permit2, msg.sender, _tokenDepositDetails, _batchDepositSignature);
-        _handleZap(_data, _referral);
-        _handleSweepTokens(_sweepDust, _dustReciever);
-        emit CrossZapped(msg.sender, _transactionId, _vHash, _refundee);
-    }
-
-    function executeZap(bytes calldata _transactionId, bytes calldata _data, bytes calldata _zapVerifierSignature, bytes calldata _userIntentSig, uint256 _deadline, address _user, address _referral, address _dustReciever, TokenInfo[] calldata _executorFeeInfo, InputErc20Tokens[] calldata _inputTokens, address[] calldata _sweepDust) external payable nonReentrant refundExcessNative(_dustReciever) {
-        require(_dustReciever != address(0), NoTransferToNullAddress());
-        bytes32 transactionId = keccak256(_transactionId);
-        handleZapVerification(transactionId, _user, _referral, _deadline, _data, _zapVerifierSignature);
-        handleGasLessVerification(_user, _referral, _dustReciever, _deadline, transactionId, keccak256(abi.encode(_executorFeeInfo)), keccak256(_data), keccak256(abi.encode(_sweepDust)), _userIntentSig);
-        LibAsset.depositErc20Batch(permit2, _user, _inputTokens);
         _transferExecutorFees(_executorFeeInfo);
-        _handleZap(_data, _referral);
-        _handleSweepTokens(_sweepDust, _dustReciever);
-        emit GasslessZapped(msg.sender, _user, _transactionId);
+
+        _handleSweepTokens(_sweepDust, _dustReceiver);
+
+        emit GaslessZapped(_transactionId, msg.sender, _user, _feeConfig.integrator, _crosschainData);
     }
 
-    function executeZapWithPermit2Witness(bytes calldata _transactionId, bytes calldata _data, bytes calldata _zapVerifierSignature, bytes calldata _userIntentSig, uint256 _deadline, address _user, address _referral, address _dustReciever, TokenInfo[] calldata _executorFeeInfo, PermitBatchTransferFrom calldata _tokenDepositDetails, address[] calldata _sweepDust) external payable nonReentrant refundExcessNative(_dustReciever) {
-        require(_dustReciever != address(0), NoTransferToNullAddress());
-        bytes32 transactionId = keccak256(_transactionId);
-        handleZapVerification(transactionId, _user, _referral, _deadline, _data, _zapVerifierSignature);
-        handleGasLessVerificationViaPermit2Witness(transactionId, _user, _referral, _dustReciever, keccak256(abi.encode(_executorFeeInfo)), keccak256(_data), keccak256(abi.encode(_sweepDust)), _userIntentSig, _tokenDepositDetails);
+    /// @inheritdoc IDZapZapCore
+    function executeZap(
+        bytes32 _transactionId,
+        bytes calldata _crosschainData,
+        bytes calldata _zapVerificationSignature,
+        bytes calldata _userIntentSignature,
+        uint256 _zapDeadline,
+        address _user,
+        address _dustReceiver,
+        PermitBatchTransferFrom calldata _tokenDepositDetails,
+        FeeConfig calldata _feeConfig,
+        TokenInfo[] calldata _executorFeeInfo,
+        ZapData[] calldata _zapData,
+        address[] calldata _sweepDust
+    ) external payable nonReentrant whenNotPaused refundExcessNative(_dustReceiver) {
+        require(_dustReceiver != address(0), NoTransferToNullAddress());
+        bytes32 zapDataHash = keccak256(abi.encode(_zapData));
+        bytes32 feeDataHash = keccak256(abi.encode(_feeConfig));
+
+        _handleZapVerification(_transactionId, zapDataHash, feeDataHash, _user, _zapDeadline, _zapVerificationSignature);
+
+        bytes32 witness = keccak256(
+            abi.encode(
+                _GASLESS_WITNESS_TYPEHASH,
+                _transactionId,
+                _user,
+                _dustReceiver,
+                zapDataHash,
+                feeDataHash,
+                keccak256(abi.encode(_executorFeeInfo)),
+                keccak256(_crosschainData),
+                keccak256(abi.encode(_sweepDust))
+            )
+        );
+
+        LibPermit.permit2BatchWitnessTransferFrom(
+            permit2,
+            _user,
+            address(this),
+            witness,
+            _tokenDepositDetails,
+            _userIntentSignature,
+            _GASLESS_WITNESS_TYPE_STRING
+        );
+
+        _handleZap(_zapData, _user);
+
+        _processFee(_feeConfig);
+
         _transferExecutorFees(_executorFeeInfo);
-        _handleZap(_data, _referral);
-        _handleSweepTokens(_sweepDust, _dustReciever);
-        emit GasslessZapped(msg.sender, _user, _transactionId);
+
+        _handleSweepTokens(_sweepDust, _dustReceiver);
+
+        emit GaslessZapped(_transactionId, msg.sender, _user, _feeConfig.integrator, _crosschainData);
     }
-
-    function executeCrossZap(bytes32 _vHash, bytes calldata _transactionId, bytes calldata _data, bytes calldata _zapVerifierSignature, bytes calldata _userIntentSig, uint256 _deadline, address _user, address _referral, address _dustReciever, TokenInfo[] calldata _executorFeeInfo, InputErc20Tokens[] calldata _inputTokens, address[] calldata _sweepDust) external payable nonReentrant refundExcessNative(_dustReciever) {
-        require(_dustReciever != address(0), NoTransferToNullAddress());
-        bytes32 transactionId = keccak256(_transactionId);
-        handleZapVerification(transactionId, _user, _referral, _deadline, _data, _zapVerifierSignature);
-        handleCrosschainGasLessVerification(_user, _referral, _dustReciever, _deadline, transactionId, _vHash, keccak256(abi.encode(_executorFeeInfo)), keccak256(_data), keccak256(abi.encode(_sweepDust)), _userIntentSig);
-        LibAsset.depositErc20Batch(permit2, _user, _inputTokens);
-        _transferExecutorFees(_executorFeeInfo);
-        _handleZap(_data, _referral);
-        _handleSweepTokens(_sweepDust, _dustReciever);
-        emit GasslessZapped(msg.sender, _user, _transactionId);
-    }
-
-    function executeCrossZapWithPermit2Witness(bytes32 _vHash, bytes calldata _transactionId, bytes calldata _data, bytes calldata _zapVerifierSignature, bytes calldata _userIntentSig, uint256 _deadline, address _user, address _referral, address _dustReciever, TokenInfo[] calldata _executorFeeInfo, PermitBatchTransferFrom calldata _tokenDepositDetails, address[] calldata _sweepDust) external payable nonReentrant refundExcessNative(_dustReciever) {
-        require(_dustReciever != address(0), NoTransferToNullAddress());
-        bytes32 transactionId = keccak256(_transactionId);
-        handleZapVerification(transactionId, _user, _referral, _deadline, _data, _zapVerifierSignature);
-        handleCrosschainGasLessVerificationViaPermit2Witness(transactionId, _vHash, _user, _referral, _dustReciever, keccak256(abi.encode(_executorFeeInfo)), keccak256(_data), keccak256(abi.encode(_sweepDust)), _userIntentSig, _tokenDepositDetails);
-        _transferExecutorFees(_executorFeeInfo);
-        _handleZap(_data, _referral);
-        _handleSweepTokens(_sweepDust, _dustReciever);
-        emit GasslessZapped(msg.sender, _user, _transactionId);
-    }
-
-    // -------------HELPERS-------------
-
-    function _verifySignature(address _verifier, bytes32 _msgHash, bytes calldata _signature) private view {
-        bytes32 digest = keccak256(abi.encodePacked("\x19\x01", _DOMAIN_SEPARATOR, _msgHash));
-        require(ECDSA.recover(digest, _signature) == _verifier, UnauthorizedSigner());
-    }
-
-    function _getRecipient(OutputToken memory outputToken) private view returns (address) {
-        return outputToken.transferType == OutputTransferType.ReceiveAndTransfer ? address(this) : outputToken.recipient;
-    }
-
-    function _getTotalAnReferralFeeAmount(uint256 _amount, uint256 _fee, uint256 _referralFee) private pure returns (uint256 totalFeeAmount, uint256 referralFeeAmount) {
-        totalFeeAmount = FullMath.mulDiv(_amount, _fee, _BPS_DENOMINATOR);
-        if (_referralFee != 0) referralFeeAmount = FullMath.mulDiv(totalFeeAmount, _referralFee, _BPS_DENOMINATOR);
-    }
-
-    function _execute(ZapData memory _zapData) private {
-        if (_zapData.callData.length != 0) {
-            if (_zapData.isDelegateCall) {
-                require(allowedCalls[_zapData.callTo], UnauthorizedCall(_zapData.callTo));
-                (bool success, bytes memory res) = _zapData.callTo.delegatecall(_zapData.callData);
-                require(success, ZapExecutionFailed(_zapData.callTo, bytes4(_zapData.callData), res));
-            } else {
-                (bool success, bytes memory res) = _zapData.callTo.call{ value: _zapData.nativeValue }(_zapData.callData);
-                require(success, ZapExecutionFailed(_zapData.callTo, bytes4(_zapData.callData), res));
-            }
-        }
-    }
-
-    function _transferNativeFee(uint256 _nativeFee, uint256 _referralNativeFeeShare, uint256 _totalNativeFeeAmount, uint256 _totalReferralNativeFeeAmount, address _referral) private {
-        if (_nativeFee != 0) {
-            _totalNativeFeeAmount += _nativeFee;
-            if (_referralNativeFeeShare != 0) _totalReferralNativeFeeAmount += FullMath.mulDiv(_nativeFee, _referralNativeFeeShare, _BPS_DENOMINATOR);
-        }
-
-        if (_totalNativeFeeAmount != 0) {
-            LibAsset.transferNativeToken(feeVault, _totalNativeFeeAmount - _totalReferralNativeFeeAmount);
-            if (_totalReferralNativeFeeAmount != 0) LibAsset.transferNativeToken(_referral, _totalReferralNativeFeeAmount);
-        }
-    }
-
-    function _transferTokenFee(address _tokenAddress, address _referralAddress, uint256 _totalFeeAmount, uint256 _referralFeeAmount) private {
-        LibAsset.transferERC20(_tokenAddress, feeVault, _totalFeeAmount - _referralFeeAmount);
-        LibAsset.transferERC20(_tokenAddress, _referralAddress, _referralFeeAmount);
-    }
-
-    function _revokeErc1155Approvals(InputToken[] memory inputTokens) private {
-        uint256 inputTokensLength = inputTokens.length;
-        for (uint256 i = 0; i < inputTokensLength; ++i) {
-            if (inputTokens[i].tokenType == TokenType.ERC1155 && inputTokens[i].transferType == InputTransferType.ApproveForSpender) {
-                LibAsset.revokeERC1155(inputTokens[i].tokenAddress, inputTokens[i].approveTo);
-            }
-        }
-    }
-
-    function _getOutputTokensInitialBalance(uint256 _calldataLength, uint256 _outputLength, uint256 _nativeValueToTransfer, uint256 _outputCount, OutputToken[] memory _outputTokens) private view returns (uint256[] memory) {
-        if (_calldataLength != 0) {
-            uint256 outputEndIndex = _outputCount + _outputLength;
-            uint256[] memory initialOutputBalances = new uint256[](_outputLength);
-            uint256 index;
-            for (uint256 i = _outputCount; i < outputEndIndex; ++i) {
-                OutputToken memory outputToken = _outputTokens[i];
-                address recipient = _getRecipient(outputToken);
-
-                if (outputToken.tokenType == TokenType.ERC20) {
-                    initialOutputBalances[index++] = LibAsset.getErc20Balance(outputToken.tokenAddress, recipient);
-                } else if (outputToken.tokenType == TokenType.NATIVE) {
-                    initialOutputBalances[index++] = recipient == address(this) ? LibAsset.selfNativeBalance() - _nativeValueToTransfer : LibAsset.getNativeBalance(recipient);
-                } else if (outputToken.tokenType == TokenType.ERC1155) {
-                    initialOutputBalances[index++] = LibAsset.getBalanceOfERC1155(outputToken.tokenAddress, recipient, outputToken.tokenId);
-                }
-            }
-
-            return initialOutputBalances;
-        }
-    }
-
-    function _transferExecutorFees(TokenInfo[] calldata _executorFeeInfo) internal {
-        for (uint256 i = 0; i < _executorFeeInfo.length; ) {
-            LibAsset.transferERC20(_executorFeeInfo[i].token, msg.sender, _executorFeeInfo[i].amount);
-            unchecked {
-                ++i;
-            }
-        }
-    }
-
-    // -------------TOKEN_HANDLERS-------------
-
-    function handleZapVerification(bytes32 _transactionId, address _user, address _referral, uint256 _deadline, bytes calldata _data, bytes calldata _signature) internal {
-        require(msg.sender != _referral, SenderCannotBeReferral());
-        require(_deadline >= block.timestamp, SigDeadlineExpired());
-
-        bytes32 msgHash = keccak256(abi.encode(_SIGNED_ZAP_DATA_TYPEHASH, _transactionId, _user, _referral, nonce[_user], _deadline, keccak256(_data)));
-        _verifySignature(zapVerifier, msgHash, _signature);
-        ++nonce[_user];
-    }
-
-    function handleGasLessVerification(address _user, address _referral, address _dustReciever, uint256 _deadline, bytes32 _transactionId, bytes32 _executorFeeHash, bytes32 _zapDataHash, bytes32 _sweepDataHash, bytes calldata _signature) internal {
-        if (_deadline < block.timestamp) revert SigDeadlineExpired();
-        bytes32 msgHash = keccak256(abi.encode(_SIGNED_GASLESS_DATA_TYPEHASH, _transactionId, _user, _referral, _dustReciever, nonce[_user], _deadline, _executorFeeHash, _zapDataHash, _sweepDataHash));
-        _verifySignature(_user, msgHash, _signature);
-        ++nonce[_user];
-    }
-
-    function handleCrosschainGasLessVerification(address _user, address _referral, address _dustReciever, uint256 _deadline, bytes32 _transactionId, bytes32 _vHash, bytes32 _executorFeeHash, bytes32 _zapDataHash, bytes32 _sweepDataHash, bytes calldata _signature) internal {
-        if (_deadline < block.timestamp) revert SigDeadlineExpired();
-        bytes32 msgHash = keccak256(abi.encode(_CROSSCHAIN_SIGNED_GASLESS_DATA_TYPEHASH, _transactionId, _vHash, _user, _referral, _dustReciever, nonce[_user], _deadline, _executorFeeHash, _zapDataHash, _sweepDataHash));
-        _verifySignature(_user, msgHash, _signature);
-        ++nonce[_user];
-    }
-
-    function handleGasLessVerificationViaPermit2Witness(bytes32 _transactionId, address _user, address _referral, address _dustReciever, bytes32 _executorFeeHash, bytes32 _zapDataHash, bytes32 _sweepDataHash, bytes calldata _signature, PermitBatchTransferFrom calldata _tokenDepositDetails) internal {
-        bytes32 witness = keccak256(abi.encode(_GASLESS_WITNESS_TYPEHASH, _transactionId, _user, _referral, _dustReciever, _executorFeeHash, _zapDataHash, _sweepDataHash));
-        LibPermit.permit2BatchWitnessTransferFrom(permit2, _user, address(this), witness, _tokenDepositDetails, _signature, _GASLESS_WITNESS_TYPE_STRING);
-    }
-
-    function handleCrosschainGasLessVerificationViaPermit2Witness(bytes32 _transactionId, bytes32 _vHash, address _user, address _referral, address _dustReciever, bytes32 _executorFeeHash, bytes32 _zapDataHash, bytes32 _sweepDataHash, bytes calldata _signature, PermitBatchTransferFrom calldata _tokenDepositDetails) internal {
-        bytes32 witness = keccak256(abi.encode(_CROSSCHAIN_GASLESS_WITNESS_TYPEHASH, _transactionId, _vHash, _user, _referral, _dustReciever, _executorFeeHash, _zapDataHash, _sweepDataHash));
-        LibPermit.permit2BatchWitnessTransferFrom(permit2, _user, address(this), witness, _tokenDepositDetails, _signature, _CROSSCHAIN_GASLESS_WITNESS_TYPE_STRING);
-    }
-
-    function _handleNativeInput(InputToken memory _inputToken, uint256 _tokenFee, uint256 _referralFee) private returns (uint256 totalFeeAmount, uint256 referralFeeAmount) {
-        if (_tokenFee != 0) (totalFeeAmount, referralFeeAmount) = _getTotalAnReferralFeeAmount(_inputToken.amount, _tokenFee, _referralFee);
-        if (_inputToken.transferType == InputTransferType.TransferToSpender) LibAsset.transferNativeToken(_inputToken.approveTo, _inputToken.amount - totalFeeAmount);
-    }
-
-    function _handleErc20Input(InputToken memory _inputToken, uint256 _tokenFee, uint256 _referralFee, address _referralAddress) private returns (uint256 totalFeeAmount, uint256 referralFeeAmount) {
-        if (_tokenFee != 0) (totalFeeAmount, referralFeeAmount) = _getTotalAnReferralFeeAmount(_inputToken.amount, _tokenFee, _referralFee);
-        uint256 amount = _inputToken.amount - totalFeeAmount;
-
-        if (_inputToken.transferType == InputTransferType.ApproveForSpender) LibAsset.maxApproveERC20(_inputToken.tokenAddress, _inputToken.approveTo, amount);
-        else if (_inputToken.transferType == InputTransferType.TransferToSpender) LibAsset.transferERC20(_inputToken.tokenAddress, _inputToken.approveTo, amount);
-        else if (_inputToken.transferType == InputTransferType.ApproveForSpenderViaPermit2) LibAsset.maxPermit2Approve(permit2, _inputToken.tokenAddress, _inputToken.approveTo, amount);
-
-        _transferTokenFee(_inputToken.tokenAddress, _referralAddress, totalFeeAmount, referralFeeAmount);
-    }
-
-    function _handleErc721Input(InputToken memory _inputToken) private {
-        if (_inputToken.transferType == InputTransferType.ApproveForSpender) {
-            if (LibAsset.getOwnerOfERC721(_inputToken.tokenAddress, _inputToken.tokenId) != address(this)) LibAsset.transferERC721(_inputToken.tokenAddress, msg.sender, address(this), _inputToken.tokenId);
-            LibAsset.approveERC721(_inputToken.tokenAddress, _inputToken.approveTo, _inputToken.tokenId);
-        } else if (_inputToken.transferType == InputTransferType.TransferToSpender) LibAsset.transferERC721(_inputToken.tokenAddress, _inputToken.approveTo, _inputToken.tokenId);
-        else if (_inputToken.transferType == InputTransferType.DirectTransferToSpender) LibAsset.transferERC721(_inputToken.tokenAddress, msg.sender, _inputToken.approveTo, _inputToken.tokenId);
-    }
-
-    function _handleErc1155Input(InputToken memory _inputToken) private {
-        if (_inputToken.transferType == InputTransferType.DirectTransferToSpender) {
-            LibAsset.transferERC1155(_inputToken.tokenAddress, msg.sender, _inputToken.approveTo, _inputToken.tokenId, _inputToken.amount);
-            return;
-        }
-
-        uint256 balance = LibAsset.getBalanceOfERC1155(_inputToken.tokenAddress, address(this), _inputToken.tokenId);
-        if (balance < _inputToken.amount) LibAsset.transferERC1155(_inputToken.tokenAddress, msg.sender, address(this), _inputToken.tokenId, _inputToken.amount - balance);
-
-        if (_inputToken.transferType == InputTransferType.ApproveForSpender) {
-            LibAsset.approveERC1155(_inputToken.tokenAddress, _inputToken.approveTo);
-        } else if (_inputToken.transferType == InputTransferType.TransferToSpender) LibAsset.transferERC1155(_inputToken.tokenAddress, address(this), _inputToken.approveTo, _inputToken.tokenId, _inputToken.amount);
-    }
-
-    function _handleERC20Output(OutputToken memory _outputToken, address _recipient, uint256 _initialBalance, uint256 _tokenFee, uint256 _referralFee, address _referralAddress) private returns (uint256 totalFeeAmount, uint256 referralFeeAmount) {
-        uint256 returnAmount = LibAsset.getBalance(_outputToken.tokenAddress, _recipient) - _initialBalance;
-        require(returnAmount >= _outputToken.minReturn, InvalidReturnAmount(returnAmount, _outputToken.minReturn));
-
-        if (_tokenFee != 0) {
-            require(_outputToken.transferType != OutputTransferType.DirectTransferToRecipient, InvalidOutputType());
-            (totalFeeAmount, referralFeeAmount) = _getTotalAnReferralFeeAmount(returnAmount, _tokenFee, _referralFee);
-        }
-        uint256 amount = returnAmount - totalFeeAmount;
-
-        if (_outputToken.transferType == OutputTransferType.ReceiveAndTransfer) LibAsset.transferERC20(_outputToken.tokenAddress, _outputToken.recipient, amount);
-
-        _transferTokenFee(_outputToken.tokenAddress, _referralAddress, totalFeeAmount, referralFeeAmount);
-    }
-
-    function _handleNativeOutput(OutputToken memory _outputToken, address _recipient, uint256 _initialBalance, uint256 _tokenFee, uint256 _referralFee) private returns (uint256 totalFeeAmount, uint256 referralFeeAmount) {
-        uint256 returnAmount = LibAsset.getBalance(_outputToken.tokenAddress, _recipient) - _initialBalance;
-        require(returnAmount >= _outputToken.minReturn, InvalidReturnAmount(returnAmount, _outputToken.minReturn));
-
-        if (_tokenFee != 0) {
-            require(_outputToken.transferType != OutputTransferType.DirectTransferToRecipient, InvalidOutputType());
-            (totalFeeAmount, referralFeeAmount) = _getTotalAnReferralFeeAmount(returnAmount, _tokenFee, _referralFee);
-        }
-
-        uint256 amount = returnAmount - totalFeeAmount;
-        if (_outputToken.transferType == OutputTransferType.ReceiveAndTransfer) LibAsset.transferNativeToken(_outputToken.recipient, amount);
-    }
-
-    function _handleERC721Output(OutputToken memory _outputToken, address _recipient) private {
-        require(_recipient == LibAsset.getOwnerOfERC721(_outputToken.tokenAddress, _outputToken.tokenId), InvalidTokenOwner(_outputToken.tokenId));
-        if (_outputToken.transferType == OutputTransferType.ReceiveAndTransfer) LibAsset.transferERC721(_outputToken.tokenAddress, _outputToken.recipient, _outputToken.tokenId);
-    }
-
-    function _handleERC1155Output(OutputToken memory _outputToken, address _recipient, uint256 _initialBalance) private {
-        uint256 returnAmount = LibAsset.getBalanceOfERC1155(_outputToken.tokenAddress, _recipient, _outputToken.tokenId) - _initialBalance;
-
-        require(returnAmount >= _outputToken.minReturn, InvalidReturnAmount(returnAmount, _outputToken.minReturn));
-        if (_outputToken.transferType == OutputTransferType.ReceiveAndTransfer) LibAsset.transferERC1155(_outputToken.tokenAddress, address(this), _outputToken.recipient, _outputToken.tokenId, returnAmount);
-    }
-
-    function _processInputTokens(address _referral, uint256 _inputCount, ZapData memory _zapData, InputToken[] memory _inputTokens, ReferralFeeInfo memory _referralFee) private returns (uint256 totalNativeFeeAmount, uint256 totalReferralNativeFeeAmount) {
-        uint256 length = _inputCount + _zapData.inputLength;
-        for (uint256 i = _inputCount; i < length; ++i) {
-            InputToken memory inputToken = _inputTokens[i];
-            require(inputToken.fee <= MAX_TOKEN_FEE, TokenFeeExceedsMax());
-
-            if (inputToken.tokenType == TokenType.NATIVE) {
-                (uint256 totalFeeAmount, uint256 referralFeeAmount) = _handleNativeInput(inputToken, inputToken.fee, _referralFee.tokenFeeShare);
-
-                totalNativeFeeAmount += totalFeeAmount;
-                totalReferralNativeFeeAmount += referralFeeAmount;
-            } else if (inputToken.tokenType == TokenType.ERC20) _handleErc20Input(inputToken, inputToken.fee, _referralFee.tokenFeeShare, _referral);
-            else if (inputToken.tokenType == TokenType.ERC721) _handleErc721Input(inputToken);
-            else if (inputToken.tokenType == TokenType.ERC1155) _handleErc1155Input(inputToken);
-        }
-    }
-
-    function _processOutputTokens(address _referral, uint256 _outputCount, ZapData memory _zapData, OutputToken[] memory _outputTokens, ReferralFeeInfo memory _referralFee, uint256[] memory _initialOutputBalances) private returns (uint256 totalNativeFeeAmount, uint256 totalReferralNativeFeeAmount) {
-        uint256 length = _outputCount + _zapData.outputLength;
-        uint256 index;
-        for (uint256 i = _outputCount; i < length; ++i) {
-            OutputToken memory outputToken = _outputTokens[i];
-            address recipient = _getRecipient(outputToken);
-            require(outputToken.fee <= MAX_TOKEN_FEE, TokenFeeExceedsMax());
-
-            if (outputToken.tokenType == TokenType.ERC20) _handleERC20Output(outputToken, recipient, _initialOutputBalances[index++], outputToken.fee, _referralFee.tokenFeeShare, _referral);
-            else if (outputToken.tokenType == TokenType.NATIVE) {
-                (uint256 totalFeeAmount, uint256 referralFeeAmount) = _handleNativeOutput(outputToken, recipient, _initialOutputBalances[index++], outputToken.fee, _referralFee.tokenFeeShare);
-
-                totalNativeFeeAmount += totalFeeAmount;
-                totalReferralNativeFeeAmount += referralFeeAmount;
-            } else if (outputToken.tokenType == TokenType.ERC721) _handleERC721Output(outputToken, recipient);
-            else if (outputToken.tokenType == TokenType.ERC1155) _handleERC1155Output(outputToken, recipient, _initialOutputBalances[index++]);
-        }
-    }
-
-    // -------------PRIVATE-------------
-
-    function _handleSweepTokens(address[] calldata _sweepErc20, address _dustReciever) internal {
-        uint256 length = _sweepErc20.length;
-        for (uint256 i = 0; i < length; ++i) {
-            address tokenAddress = _sweepErc20[i];
-            uint256 balance = LibAsset.getBalance(tokenAddress, address(this));
-            LibAsset.transferERC20(tokenAddress, _dustReciever, balance);
-        }
-    }
-
-    function _handleZap(bytes calldata _data, address _referral) private {
-        (InputToken[] memory inputTokens, OutputToken[] memory outputTokens, ZapData[] memory zapData, uint256 nativeFee) = abi.decode(_data, (InputToken[], OutputToken[], ZapData[], uint256));
-
-        ReferralFeeInfo memory referralFee = referralFeeInfo[_referral];
-        uint256 totalReferralNativeFeeAmount;
-        uint256 totalNativeFeeAmount;
-        uint256 inputCount;
-        uint256 outputCount;
-        uint256 length = zapData.length;
-
-        for (uint256 i; i < length; ++i) {
-            (uint256 nativeFeeAmount, uint256 referralNativeFeeAmount) = _processInputTokens(_referral, inputCount, zapData[i], inputTokens, referralFee);
-            inputCount += zapData[i].inputLength;
-            totalNativeFeeAmount += nativeFeeAmount;
-            totalReferralNativeFeeAmount += referralNativeFeeAmount;
-
-            uint256[] memory initialOutputBalances = _getOutputTokensInitialBalance(zapData[i].callData.length, zapData[i].outputLength, zapData[i].nativeValue, outputCount, outputTokens);
-
-            _execute(zapData[i]);
-
-            (nativeFeeAmount, referralNativeFeeAmount) = _processOutputTokens(_referral, outputCount, zapData[i], outputTokens, referralFee, initialOutputBalances);
-
-            outputCount += zapData[i].outputLength;
-            totalNativeFeeAmount += nativeFeeAmount;
-            totalReferralNativeFeeAmount += referralNativeFeeAmount;
-        }
-        require(inputCount == inputTokens.length, InvalidInputLength());
-        require(outputCount == outputTokens.length, InvalidOutputLength());
-
-        _revokeErc1155Approvals(inputTokens);
-        _transferNativeFee(nativeFee, referralFee.nativeFeeShare, totalNativeFeeAmount, totalReferralNativeFeeAmount, _referral);
-    }
-
-    // Able to receive ether
-    // solhint-disable-next-line no-empty-blocks
-    receive() external payable {}
 }

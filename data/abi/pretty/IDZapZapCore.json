@@ -1,24 +1,6 @@
 [
-  "event AdminAdded(address indexed account)",
-  "event AdminRemoved(address indexed account)",
-  "event CallsWhitelistingUpdated(address[] callTo, bool isWhitelisted)",
-  "event CrossZapped(address indexed user, bytes32 indexed txId, bytes32 indexed vHash, address refundee)",
-  "event DefaultReferralFeeSet(uint256 defaultReferralNativeFeeShare, uint256 defaultReferralTokenFeeShare)",
-  "event ERC1155Recovered(address indexed token, address indexed recipient, uint256[] ids, uint256[] amounts)",
-  "event ERC721Recovered(address indexed token, address indexed recipient, uint256 id)",
-  "event FeeVaultSet(address indexed feeVault)",
-  "event ReferralAdded(address indexed referral)",
-  "event TokenRecovered(address indexed token, address indexed recipient, uint256 amount)",
-  "event ZapVerifierSet(address indexed verifier)",
-  "event Zapped(address indexed user, bytes32 indexed txId)",
-  "function addReferral(address _referral, uint96 _nativeFeeShare, uint96 _tokenFeeShare)",
-  "function crossZap(bytes32 _transactionId, bytes32 _vHash, bytes _data, bytes _signature, uint256 _deadline, address _referral, address _refundee, address _dustReciever, tuple(address token, uint256 amount, bytes permit)[] _inputTokens, address[] _sweepDust) payable",
-  "function recoverERC1155(address _token, address _recipient, uint256[] _ids, uint256[] _amounts)",
-  "function recoverERC721(address _token, address _recipient, uint256 _id)",
-  "function recoverToken(address _token, address _recipient, uint256 _amount)",
-  "function registerAsReferral()",
-  "function setDefaultReferralFee(uint96 _defaultReferralNativeFeeShare, uint96 _defaultReferralTokenFeeShare)",
-  "function setFeeVault(address _feeVault)",
-  "function setVerifier(address _verifier)",
-  "function zap(bytes32 _transactionId, bytes _data, bytes _signature, uint256 _deadline, address _referral, address _dustReciever, tuple(address token, uint256 amount, bytes permit)[] _inputTokens, address[] _sweepDust) payable"
+  "function executeZap(bytes32 _transactionId, bytes _crosschainData, bytes _zapVerificationSignature, bytes _userIntentSignature, uint256 _zapDeadline, address _user, address _dustReceiver, tuple(tuple(address token, uint256 amount)[] permitted, uint256 nonce, uint256 deadline) _tokenDepositDetails, tuple(address integrator, tuple(address token, uint256 integratorFeeAmount, uint256 protocolFeeAmount)[] fees) _feeConfig, tuple(address token, uint256 amount)[] _executorFeeInfo, tuple(address callTo, address approveTo, bytes callData, bool isDelegateCall, uint256 nativeValue, tuple(uint8 tokenType, uint8 transferType, address tokenAddress, uint256 amount, uint256 tokenId)[] inputTokens, tuple(uint8 tokenType, uint8 transferType, address tokenAddress, address recipient, uint96 feeAmount, uint256 minReturn, uint256 tokenId)[] outputTokens)[] _zapData, address[] _sweepDust) payable",
+  "function executeZap(bytes32 _transactionId, bytes _crosschainData, bytes _zapVerificationSignature, bytes _userIntentSignature, uint256 _zapDeadline, uint256 _userIntentDeadline, address _user, address _dustReceiver, tuple(address token, uint256 amount, bytes permit)[] _inputTokens, tuple(address integrator, tuple(address token, uint256 integratorFeeAmount, uint256 protocolFeeAmount)[] fees) _feeConfig, tuple(address token, uint256 amount)[] _executorFeeInfo, tuple(address callTo, address approveTo, bytes callData, bool isDelegateCall, uint256 nativeValue, tuple(uint8 tokenType, uint8 transferType, address tokenAddress, uint256 amount, uint256 tokenId)[] inputTokens, tuple(uint8 tokenType, uint8 transferType, address tokenAddress, address recipient, uint96 feeAmount, uint256 minReturn, uint256 tokenId)[] outputTokens)[] _zapData, address[] _sweepDust) payable",
+  "function zap(bytes32 _transactionId, bytes _crosschainData, bytes _zapVerificationSignature, bytes _batchDepositSignature, uint256 _deadline, address _dustReceiver, tuple(tuple(address token, uint256 amount)[] permitted, uint256 nonce, uint256 deadline) _tokenDepositDetails, tuple(address integrator, tuple(address token, uint256 integratorFeeAmount, uint256 protocolFeeAmount)[] fees) _feeConfig, tuple(address callTo, address approveTo, bytes callData, bool isDelegateCall, uint256 nativeValue, tuple(uint8 tokenType, uint8 transferType, address tokenAddress, uint256 amount, uint256 tokenId)[] inputTokens, tuple(uint8 tokenType, uint8 transferType, address tokenAddress, address recipient, uint96 feeAmount, uint256 minReturn, uint256 tokenId)[] outputTokens)[] _zapData, address[] _sweepDust) payable",
+  "function zap(bytes32 _transactionId, bytes _crosschainData, bytes _zapVerificationSignature, uint256 _deadline, address _dustReceiver, tuple(address token, uint256 amount, bytes permit)[] _inputTokens, tuple(address integrator, tuple(address token, uint256 integratorFeeAmount, uint256 protocolFeeAmount)[] fees) _feeConfig, tuple(address callTo, address approveTo, bytes callData, bool isDelegateCall, uint256 nativeValue, tuple(uint8 tokenType, uint8 transferType, address tokenAddress, uint256 amount, uint256 tokenId)[] inputTokens, tuple(uint8 tokenType, uint8 transferType, address tokenAddress, address recipient, uint96 feeAmount, uint256 minReturn, uint256 tokenId)[] outputTokens)[] _zapData, address[] _sweepDust) payable"
 ]

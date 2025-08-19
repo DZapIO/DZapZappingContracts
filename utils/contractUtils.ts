@@ -1,4 +1,5 @@
-import { ContractFactory, formatUnits, Provider } from 'ethers'
+import { ContractFactory, formatUnits, keccak256, Provider } from 'ethers'
+import { ethers } from 'hardhat'
 
 export const getGasPrice = async (
   provider: Provider,
@@ -75,4 +76,14 @@ export const estimateTxCost = async (
     console.error('Error estimating deployment cost:', error)
     return null
   }
+}
+
+export const isContractDeployed = async (contractAddress: string) => {
+  const code = await ethers.provider.getCode(contractAddress)
+  return code !== '0x'
+}
+
+export const getContractBytecodeHash = async (contractAddress: string) => {
+  const bytecode = await ethers.provider.getCode(contractAddress)
+  return keccak256(bytecode)
 }

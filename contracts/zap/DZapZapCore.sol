@@ -13,7 +13,7 @@ import { DZapCoreBase } from "./DZapCoreBase.sol";
 import { DZapExecution } from "./DZapExecution.sol";
 
 import { FeeConfig, ZapData, InputErc20Tokens, TokenInfo } from "./Types.sol";
-import { NoTransferToNullAddress } from "./Errors.sol";
+import { DustReceiverIsZeroAddress, IntegratorIsZeroAddress } from "./Errors.sol";
 
 /*  
 ---------------------------------------------------------
@@ -45,7 +45,7 @@ contract DZapZapCore is ReentrancyGuard, DZapExecution, IDZapZapCore {
     /// @param _protocolFeeVault Address where protocol fees are sent
     /// @param _zapVerifier Address of the zap verifier
     /// @param _permit2 Address of the permit2 contract
-    /// @param _uniswapPemit2 Address of the uniswap permit2 contract
+    /// @param _uniswapPermit2 Address of the uniswap permit2 contract
     /// @param _uniswapPermit2BytecodeHash Hash of the uniswap permit2 bytecode
     /// @param _salt Random salt for contract creation
     constructor(
@@ -53,10 +53,10 @@ contract DZapZapCore is ReentrancyGuard, DZapExecution, IDZapZapCore {
         address _protocolFeeVault,
         address _zapVerifier,
         address _permit2,
-        address _uniswapPemit2,
+        address _uniswapPermit2,
         bytes32 _uniswapPermit2BytecodeHash,
         bytes32 _salt
-    ) DZapCoreBase(_owner, _protocolFeeVault, _zapVerifier, _permit2, _uniswapPemit2, _uniswapPermit2BytecodeHash, _salt) {}
+    ) DZapCoreBase(_owner, _protocolFeeVault, _zapVerifier, _permit2, _uniswapPermit2, _uniswapPermit2BytecodeHash, _salt) {}
 
     // ============= EXTERNAL FUNCTIONS =============
 
@@ -72,7 +72,9 @@ contract DZapZapCore is ReentrancyGuard, DZapExecution, IDZapZapCore {
         ZapData[] calldata _zapData,
         address[] calldata _sweepDust
     ) external payable nonReentrant whenNotPaused refundExcessNative(_dustReceiver) {
-        require(_dustReceiver != address(0), NoTransferToNullAddress());
+        require(_dustReceiver != address(0), DustReceiverIsZeroAddress());
+        require(_feeConfig.integrator != address(0), IntegratorIsZeroAddress());
+
         bytes32 zapDataHash = keccak256(abi.encode(_zapData));
         bytes32 feeDataHash = keccak256(abi.encode(_feeConfig));
 
@@ -102,7 +104,9 @@ contract DZapZapCore is ReentrancyGuard, DZapExecution, IDZapZapCore {
         ZapData[] calldata _zapData,
         address[] calldata _sweepDust
     ) external payable nonReentrant whenNotPaused refundExcessNative(_dustReceiver) {
-        require(_dustReceiver != address(0), NoTransferToNullAddress());
+        require(_dustReceiver != address(0), DustReceiverIsZeroAddress());
+        require(_feeConfig.integrator != address(0), IntegratorIsZeroAddress());
+
         bytes32 zapDataHash = keccak256(abi.encode(_zapData));
         bytes32 feeDataHash = keccak256(abi.encode(_feeConfig));
 
@@ -135,7 +139,9 @@ contract DZapZapCore is ReentrancyGuard, DZapExecution, IDZapZapCore {
         ZapData[] calldata _zapData,
         address[] calldata _sweepDust
     ) external payable nonReentrant whenNotPaused refundExcessNative(_dustReceiver) {
-        require(_dustReceiver != address(0), NoTransferToNullAddress());
+        require(_dustReceiver != address(0), DustReceiverIsZeroAddress());
+        require(_feeConfig.integrator != address(0), IntegratorIsZeroAddress());
+
         bytes32 zapDataHash = keccak256(abi.encode(_zapData));
         bytes32 feeDataHash = keccak256(abi.encode(_feeConfig));
 
@@ -182,7 +188,9 @@ contract DZapZapCore is ReentrancyGuard, DZapExecution, IDZapZapCore {
         ZapData[] calldata _zapData,
         address[] calldata _sweepDust
     ) external payable nonReentrant whenNotPaused refundExcessNative(_dustReceiver) {
-        require(_dustReceiver != address(0), NoTransferToNullAddress());
+        require(_dustReceiver != address(0), DustReceiverIsZeroAddress());
+        require(_feeConfig.integrator != address(0), IntegratorIsZeroAddress());
+
         bytes32 zapDataHash = keccak256(abi.encode(_zapData));
         bytes32 feeDataHash = keccak256(abi.encode(_feeConfig));
 

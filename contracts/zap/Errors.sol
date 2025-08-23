@@ -7,6 +7,8 @@ error CallerIsNotOwnerOrAdmin();
 
 error ZeroAddress();
 error NoTransferToNullAddress();
+error DustReceiverIsZeroAddress();
+error IntegratorIsZeroAddress();
 
 error UnauthorizedSigner();
 error SigDeadlineExpired();
@@ -14,6 +16,7 @@ error SigDeadlineExpired();
 error InvalidRecipient();
 error InvalidTokenOwner(uint256);
 error InvalidReturnAmount(uint256 returnAmount, uint256 minReturn);
+error FeeExceedsReturnAmount(uint256 returnAmount, uint256 feeAmount);
 
 error InvalidProtocolFeeVault();
 

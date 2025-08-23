@@ -4,7 +4,7 @@ pragma solidity 0.8.30;
 import { LibAsset } from "../shared/libraries/LibAsset.sol";
 import { DZapVerification } from "./DZapVerification.sol";
 import { InputToken, OutputToken, TokenType, InputTransferType, OutputTransferType, TokenInfo, FeeConfig } from "./Types.sol";
-import { InvalidTokenOwner, InvalidReturnAmount, InvalidRecipient } from "./Errors.sol";
+import { InvalidTokenOwner, InvalidReturnAmount, InvalidRecipient, FeeExceedsReturnAmount } from "./Errors.sol";
 
 /// @title DZapTokenHandler
 /// @author DZap
@@ -178,6 +178,7 @@ abstract contract DZapTokenHandler is DZapVerification {
         }
 
         if (_outputToken.transferType == OutputTransferType.ReceiveAndTransfer) {
+            require(_outputToken.feeAmount <= returnAmount, FeeExceedsReturnAmount(returnAmount, _outputToken.feeAmount));
             uint256 transferAmount = _outputToken.feeAmount > 0 ? returnAmount - _outputToken.feeAmount : returnAmount;
             LibAsset.transferERC20(_outputToken.tokenAddress, _outputToken.recipient, transferAmount);
         }
@@ -259,7 +260,7 @@ abstract contract DZapTokenHandler is DZapVerification {
         uint256 length = _executorFeeInfo.length;
 
         for (uint256 i; i < length; ++i) {
-            LibAsset.transferToken(_executorFeeInfo[i].token, msg.sender, _executorFeeInfo[i].amount);
+            LibAsset.transferERC20(_executorFeeInfo[i].token, msg.sender, _executorFeeInfo[i].amount);
         }
     }
 
@@ -274,7 +275,7 @@ abstract contract DZapTokenHandler is DZapVerification {
             uint256 balance = LibAsset.getBalance(tokenAddress, address(this));
 
             if (balance > 0) {
-                LibAsset.transferToken(tokenAddress, _dustReceiver, balance);
+                LibAsset.transferERC20(tokenAddress, _dustReceiver, balance);
             }
         }
     }

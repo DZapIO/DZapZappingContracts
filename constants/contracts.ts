@@ -24,6 +24,8 @@ export const ERRORS = {
   ZeroAddress: 'ZeroAddress',
   CallerIsNotOwnerOrExecutor: 'CallerIsNotOwnerOrExecutor',
   NoTransferToNullAddress: 'NoTransferToNullAddress',
+  IntegratorIsZeroAddress: 'IntegratorIsZeroAddress',
+  DustReceiverIsZeroAddress: 'DustReceiverIsZeroAddress',
   ReferralAlreadyAdded: 'ReferralAlreadyAdded',
   InvalidWalletImp: 'InvalidWalletImp',
   AlreadyDeployed: 'AlreadyDeployed',
@@ -56,12 +58,12 @@ export const ERRORS = {
   UnauthorizedCall: 'UnauthorizedCall',
   ReentrancyGuardReentrantCall: 'ReentrancyGuardReentrantCall',
   SelfCallNotAllowed: 'SelfCallNotAllowed',
+  ProtectedSelector: 'ProtectedSelector',
 
   CallerIsNotOwnerOrAdmin: 'CallerIsNotOwnerOrAdmin',
   InvalidProtocolFeeVault: 'InvalidProtocolFeeVault',
   UniswapPermit2AlreadySet: 'UniswapPermit2AlreadySet',
   UniswapPermit2ByteCodeMismatch: 'UniswapPermit2ByteCodeMismatch',
-  AdaptersWhitelistingUpdated: 'AdaptersWhitelistingUpdated',
 }
 
 export const EVENTS = {
@@ -78,6 +80,7 @@ export const EVENTS = {
   Unpaused: 'Unpaused',
   Zapped: 'Zapped',
   GaslessZapped: 'GaslessZapped',
+  SelectorsBlacklistingUpdated: 'SelectorsBlacklistingUpdated',
 
   CallsWhitelistingUpdated: 'CallsWhitelistingUpdated',
   Executed: 'Executed',

@@ -41,7 +41,7 @@ export interface InputToken {
   transferType: InputTransferType
   tokenAddress: string
   amount: bigint
-  tokenId: number
+  tokenId: bigint
 }
 
 export interface OutputToken {
@@ -51,7 +51,7 @@ export interface OutputToken {
   recipient: string
   feeAmount: bigint
   minReturn: bigint
-  tokenId: number
+  tokenId: bigint
 }
 
 export interface ZapData {
@@ -69,7 +69,7 @@ export interface ZapDeploymentArgs {
   protocolFeeVault: string
   zapVerifier: string
   permit2: string
-  uniswapPemit2: string
+  uniswapPermit2: string
   uniswapPermit2BytecodeHash: string
   salt: string
 }

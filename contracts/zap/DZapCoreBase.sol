@@ -108,7 +108,7 @@ abstract contract DZapCoreBase is Ownable, ERC721Holder, ERC1155Holder, Reentran
     /// @param _protocolFeeVault Protocol fee recipient address
     /// @param _zapVerifier Address authorized to sign zap verifications
     /// @param _permit2 Permit2 contract address
-    /// @param _uniswapPemit2 Uniswap Permit2 contract address
+    /// @param _uniswapPermit2 Uniswap Permit2 contract address
     /// @param _uniswapPermit2BytecodeHash Expected bytecode hash for Uniswap Permit2
     /// @param _salt Domain separator salt
     constructor(
@@ -116,7 +116,7 @@ abstract contract DZapCoreBase is Ownable, ERC721Holder, ERC1155Holder, Reentran
         address _protocolFeeVault,
         address _zapVerifier,
         address _permit2,
-        address _uniswapPemit2,
+        address _uniswapPermit2,
         bytes32 _uniswapPermit2BytecodeHash,
         bytes32 _salt
     ) Ownable(_owner) {
@@ -130,7 +130,7 @@ abstract contract DZapCoreBase is Ownable, ERC721Holder, ERC1155Holder, Reentran
         protocolFeeVault = _protocolFeeVault;
         zapVerifier = _zapVerifier;
         permit2 = _permit2;
-        UNISWAP_PERMIT2 = _uniswapPemit2;
+        UNISWAP_PERMIT2 = _uniswapPermit2;
         EXPECTED_PERMIT2_RUNTIME_HASH = _uniswapPermit2BytecodeHash;
 
         _DOMAIN_SEPARATOR = keccak256(

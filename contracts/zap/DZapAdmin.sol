@@ -18,7 +18,7 @@ abstract contract DZapAdmin is DZapTokenHandler, Pausable {
 
     /// @notice Updates protocol fee vault address
     /// @param _protocolFeeVault New protocol fee vault address
-    function setprotocolFeeVault(address _protocolFeeVault) external onlyOwner {
+    function setProtocolFeeVault(address _protocolFeeVault) external onlyOwner {
         if (_protocolFeeVault == address(0) || _protocolFeeVault == address(this)) {
             revert InvalidProtocolFeeVault();
         }
@@ -97,7 +97,7 @@ abstract contract DZapAdmin is DZapTokenHandler, Pausable {
 
         for (uint256 i; i < length; ++i) {
             bytes4 selector = _selectors[i];
-            require(_isProtectedSelector(selector), ProtectedSelector(selector));
+            require(!_isProtectedSelector(selector), ProtectedSelector(selector));
             blockedSelectors[selector] = false;
         }
 

@@ -50,7 +50,7 @@ export interface PermitBatchTransferFrom {
   deadline: BigNumberish
 }
 
-export interface DZapPermit2BatchTranferWitness
+export interface DZapPermit2BatchTransferWitness
   extends PermitBatchTransferFrom {
   spender: string
   witness: DZapTransferWitness
@@ -62,7 +62,7 @@ export interface PermitTransferFrom {
   deadline: BigNumberish
 }
 
-export interface DZapPermit2TranferWitness extends PermitTransferFrom {
+export interface DZapPermit2TransferWitness extends PermitTransferFrom {
   spender: string
   witness: DZapTransferWitness
 }

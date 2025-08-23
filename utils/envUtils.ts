@@ -9,7 +9,7 @@ export const isProd = () => {
   return process.env.NODE_ENV == ENVIRONMENT.PRODUCTION
 }
 
-export const getEnvVar = (varName: NODE_ENV_VAR_NAMES) => {
+export const getEnvVar = (varName: keyof typeof NODE_ENV_VAR_NAMES) => {
   const envVar = process.env[NODE_ENV_VAR_NAMES[varName]]
   if (!envVar) throw Error(`Environment variable ${varName} is not defined`)
   return envVar

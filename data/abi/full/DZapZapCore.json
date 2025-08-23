@@ -23,7 +23,7 @@
       },
       {
         "internalType": "address",
-        "name": "_uniswapPemit2",
+        "name": "_uniswapPermit2",
         "type": "address"
       },
       {
@@ -43,6 +43,11 @@
   {
     "inputs": [],
     "name": "CallerIsNotOwnerOrAdmin",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "DustReceiverIsZeroAddress",
     "type": "error"
   },
   {
@@ -80,6 +85,27 @@
   {
     "inputs": [],
     "name": "ExpectedPause",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "returnAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "feeAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "FeeExceedsReturnAmount",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "IntegratorIsZeroAddress",
     "type": "error"
   },
   {
@@ -1435,11 +1461,11 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_verifier",
+        "name": "_protocolFeeVault",
         "type": "address"
       }
     ],
-    "name": "setVerifier",
+    "name": "setProtocolFeeVault",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1448,11 +1474,11 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_protocolFeeVault",
+        "name": "_verifier",
         "type": "address"
       }
     ],
-    "name": "setprotocolFeeVault",
+    "name": "setVerifier",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

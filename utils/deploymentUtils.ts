@@ -7,9 +7,11 @@ import {
 } from '../config/manager'
 import { STAGING_ZAP_CONFIG, ZAP_CONFIG } from '../config/zap'
 import { CONTRACTS } from '../constants'
-import { ChainId } from '../types'
+import { ChainId, ZapDeploymentArgs } from '../types'
 import { getDeploymentConfig, isProd } from './envUtils'
-import { PERMIT2_ADDRESS } from '../config'
+import { PERMIT2_ADDRESS, UNISWAP_PERMIT2 } from '../config'
+import { keccak256 } from 'ethers'
+import { UNISWAP_EVM_PERMIT2_BYTECODE } from '../config/uniswapPemit2Bytecode'
 
 export const getDeploymentArgs = (chainId: ChainId) => {
   const deploymentConfig = getDeploymentConfig()
@@ -24,14 +26,21 @@ export const getDeploymentArgs = (chainId: ChainId) => {
     zapConfig.domainSaltKey.replace('<chainId>', chainId.toString())
   )
 
-  const zapArgs = {
+  const permit2 = PERMIT2_ADDRESS[chainId.toString()]
+  const uniswapPermit2 = UNISWAP_PERMIT2.evm
+  if (!permit2) {
+    throw new Error(
+      `Permit2 address not configured for chainId=${chainId.toString()}`
+    )
+  }
+
+  const zapArgs: ZapDeploymentArgs = {
     owner: zapConfig.owner,
-    feeVault: zapConfig.zapFeeVault,
-    verifier: zapConfig.zapVerifier,
+    protocolFeeVault: zapConfig.zapFeeVault,
+    zapVerifier: zapConfig.zapVerifier,
     permit2: PERMIT2_ADDRESS[chainId.toString()],
-    defaultReferralNativeFeeShare: zapConfig.defaultReferralNativeFeeShare,
-    defaultReferralTokenFeeShare: zapConfig.defaultReferralTokenFeeShare,
-    maxTokenFee: zapConfig.maxTokenFee,
+    uniswapPermit2: uniswapPermit2,
+    uniswapPermit2BytecodeHash: keccak256(UNISWAP_EVM_PERMIT2_BYTECODE),
     salt: zapDomainSalt,
   }
 

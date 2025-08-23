@@ -260,7 +260,7 @@ abstract contract DZapTokenHandler is DZapVerification {
         uint256 length = _executorFeeInfo.length;
 
         for (uint256 i; i < length; ++i) {
-            LibAsset.transferERC20(_executorFeeInfo[i].token, msg.sender, _executorFeeInfo[i].amount);
+            LibAsset.transferERC20WithoutChecks(_executorFeeInfo[i].token, msg.sender, _executorFeeInfo[i].amount);
         }
     }
 
@@ -275,7 +275,7 @@ abstract contract DZapTokenHandler is DZapVerification {
             uint256 balance = LibAsset.getBalance(tokenAddress, address(this));
 
             if (balance > 0) {
-                LibAsset.transferERC20(tokenAddress, _dustReceiver, balance);
+                LibAsset.transferERC20WithoutChecks(tokenAddress, _dustReceiver, balance);
             }
         }
     }

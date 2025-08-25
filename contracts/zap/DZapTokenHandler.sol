@@ -179,7 +179,7 @@ abstract contract DZapTokenHandler is DZapVerification {
 
         if (_outputToken.transferType == OutputTransferType.ReceiveAndTransfer) {
             require(_outputToken.feeAmount <= returnAmount, FeeExceedsReturnAmount(returnAmount, _outputToken.feeAmount));
-            uint256 transferAmount = _outputToken.feeAmount > 0 ? returnAmount - _outputToken.feeAmount : returnAmount;
+            uint256 transferAmount = returnAmount - _outputToken.feeAmount;
             LibAsset.transferERC20(_outputToken.tokenAddress, _outputToken.recipient, transferAmount);
         }
     }
@@ -271,11 +271,10 @@ abstract contract DZapTokenHandler is DZapVerification {
         uint256 length = _sweepTokens.length;
 
         for (uint256 i; i < length; ++i) {
-            address tokenAddress = _sweepTokens[i];
-            uint256 balance = LibAsset.getBalance(tokenAddress, address(this));
+            uint256 balance = LibAsset.getBalance(_sweepTokens[i], address(this));
 
             if (balance > 0) {
-                LibAsset.transferERC20WithoutChecks(tokenAddress, _dustReceiver, balance);
+                LibAsset.transferERC20WithoutChecks(_sweepTokens[i], _dustReceiver, balance);
             }
         }
     }

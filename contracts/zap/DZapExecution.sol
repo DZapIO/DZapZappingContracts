@@ -34,9 +34,7 @@ abstract contract DZapExecution is DZapAdmin {
             (success, result) = _zapData.callTo.call{ value: _zapData.nativeValue }(_zapData.callData);
         }
 
-        if (!success) {
-            revert ZapExecutionFailed(_zapData.callTo, bytes4(_zapData.callData), result);
-        }
+        require(success, ZapExecutionFailed(_zapData.callTo, bytes4(_zapData.callData), result));
     }
 
     /// @notice Executes a complete zap operation with multiple steps

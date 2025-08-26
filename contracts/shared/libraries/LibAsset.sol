@@ -85,7 +85,6 @@ library LibAsset {
     }
 
     function transferFromERC20(address _token, address _from, address _to, uint256 _amount) internal {
-        if (_amount == 0) return;
         IERC20(_token).safeTransferFrom(_from, _to, _amount);
     }
 

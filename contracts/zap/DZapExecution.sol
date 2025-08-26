@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.30;
 
-import { DZapAdmin } from "./DZapAdmin.sol";
+import { DZapTokenHandler } from "./DZapTokenHandler.sol";
 import { ZapData } from "./Types.sol";
 import { UnauthorizedCall, ZapExecutionFailed, SelectorNotAllowed } from "./Errors.sol";
 
@@ -9,7 +9,7 @@ import { UnauthorizedCall, ZapExecutionFailed, SelectorNotAllowed } from "./Erro
 /// @author DZap
 /// @notice Abstract contract for handling zap execution logic
 /// @dev Provides gas-optimized execution of external calls and zap operations
-abstract contract DZapExecution is DZapAdmin {
+abstract contract DZapExecution is DZapTokenHandler {
     // ============= CORE EXECUTION FUNCTIONS =============
 
     /// @notice Executes a single external call (regular call or delegatecall)
@@ -21,9 +21,7 @@ abstract contract DZapExecution is DZapAdmin {
         bytes memory result;
 
         if (_zapData.isDelegateCall) {
-            if (!_adaptersAllowlist[_zapData.callTo]) {
-                revert UnauthorizedCall(_zapData.callTo);
-            }
+            require(_zapData.callTo != address(this), UnauthorizedCall(_zapData.callTo));
 
             // solhint-disable-next-line
             (success, result) = _zapData.callTo.delegatecall(_zapData.callData);

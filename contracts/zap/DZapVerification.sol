@@ -2,14 +2,14 @@
 pragma solidity 0.8.30;
 
 import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-import { DZapCoreBase } from "./DZapCoreBase.sol";
+import { DZapAdmin } from "./DZapAdmin.sol";
 import { UnauthorizedSigner, SigDeadlineExpired } from "./Errors.sol";
 
 /// @title DZapVerification
 /// @author DZap
 /// @notice Abstract contract handling all signature verification logic
 /// @dev Implements EIP-712 signature verification for zap operations
-abstract contract DZapVerification is DZapCoreBase {
+abstract contract DZapVerification is DZapAdmin {
     // ============= INTERNAL VERIFICATION FUNCTIONS =============
 
     /// @notice Verifies EIP-712 signature against expected signer
@@ -18,9 +18,7 @@ abstract contract DZapVerification is DZapCoreBase {
     /// @param _signature Signature to verify
     function _verifySignature(address _verifier, bytes32 _msgHash, bytes calldata _signature) internal view {
         bytes32 digest = keccak256(abi.encodePacked("\x19\x01", _DOMAIN_SEPARATOR, _msgHash));
-        if (ECDSA.recover(digest, _signature) != _verifier) {
-            revert UnauthorizedSigner();
-        }
+        require(ECDSA.recover(digest, _signature) == _verifier, UnauthorizedSigner());
     }
 
     /// @notice Handles zap verification with signature validation
@@ -38,7 +36,7 @@ abstract contract DZapVerification is DZapCoreBase {
         uint256 _deadline,
         bytes calldata _signature
     ) internal {
-        if (_deadline < block.timestamp) revert SigDeadlineExpired();
+        require(_deadline >= block.timestamp, SigDeadlineExpired());
 
         bytes32 msgHash = keccak256(
             abi.encode(_SIGNED_ZAP_DATA_TYPEHASH, _transactionId, _user, nonce[_user], _deadline, _zapDataHash, _feeDataHash)
@@ -74,7 +72,7 @@ abstract contract DZapVerification is DZapCoreBase {
         uint256 _deadline,
         bytes calldata _userIntentSignature
     ) internal {
-        if (_deadline < block.timestamp) revert SigDeadlineExpired();
+        require(_deadline >= block.timestamp, SigDeadlineExpired());
 
         bytes32 msgHash = keccak256(
             abi.encode(

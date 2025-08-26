@@ -6,22 +6,20 @@ import { IERC721 } from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import { IERC1155 } from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import { Pausable } from "@openzeppelin/contracts/utils/Pausable.sol";
 import { LibAsset } from "../shared/libraries/LibAsset.sol";
-import { DZapTokenHandler } from "./DZapTokenHandler.sol";
+import { DZapCoreBase } from "./DZapCoreBase.sol";
 import { InvalidProtocolFeeVault, ZeroAddress, NoTransferToNullAddress, UniswapPermit2AlreadySet, UniswapPermit2ByteCodeMismatch, ProtectedSelector } from "./Errors.sol";
 
 /// @title DZapAdmin
 /// @author DZap
 /// @notice Abstract contract containing all administrative functions
 /// @dev Provides gas-optimized admin operations for contract management
-abstract contract DZapAdmin is DZapTokenHandler, Pausable {
+abstract contract DZapAdmin is DZapCoreBase, Pausable {
     // ============= PROTOCOL CONFIGURATION =============
 
     /// @notice Updates protocol fee vault address
     /// @param _protocolFeeVault New protocol fee vault address
     function setProtocolFeeVault(address _protocolFeeVault) external onlyOwner {
-        if (_protocolFeeVault == address(0) || _protocolFeeVault == address(this)) {
-            revert InvalidProtocolFeeVault();
-        }
+        require(_protocolFeeVault != address(0) && _protocolFeeVault != address(this), InvalidProtocolFeeVault());
         protocolFeeVault = _protocolFeeVault;
         emit ProtocolFeeVaultSet(_protocolFeeVault);
     }
@@ -29,17 +27,15 @@ abstract contract DZapAdmin is DZapTokenHandler, Pausable {
     /// @notice Updates zap verifier address
     /// @param _verifier New verifier address
     function setVerifier(address _verifier) external onlyOwner {
-        if (_verifier == address(0)) revert ZeroAddress();
+        require(_verifier != address(0), ZeroAddress());
         zapVerifier = _verifier;
         emit ZapVerifierSet(_verifier);
     }
 
     /// @notice Updates to Uniswap Permit2 if bytecode matches expected hash
     function updateToUniswapPermit2() external onlyOwnerOrAdmin {
-        if (permit2 == UNISWAP_PERMIT2) revert UniswapPermit2AlreadySet();
-        if (keccak256(UNISWAP_PERMIT2.code) != EXPECTED_PERMIT2_RUNTIME_HASH) {
-            revert UniswapPermit2ByteCodeMismatch();
-        }
+        require(permit2 != UNISWAP_PERMIT2, UniswapPermit2AlreadySet());
+        require(keccak256(UNISWAP_PERMIT2.code) == EXPECTED_PERMIT2_RUNTIME_HASH, UniswapPermit2ByteCodeMismatch());
         permit2 = UNISWAP_PERMIT2;
         emit Permit2Updated();
     }
@@ -70,7 +66,7 @@ abstract contract DZapAdmin is DZapTokenHandler, Pausable {
 
         for (uint256 i; i < length; ++i) {
             address adapter = _adapters[i];
-            if (adapter == address(0)) revert ZeroAddress();
+            require(adapter != address(0), ZeroAddress());
             _adaptersAllowlist[adapter] = _whitelisted;
         }
 
@@ -111,7 +107,7 @@ abstract contract DZapAdmin is DZapTokenHandler, Pausable {
     /// @param _recipient Recovery recipient address
     /// @param _amount Amount to recover
     function recoverToken(address _token, address _recipient, uint256 _amount) external onlyOwner {
-        if (_recipient == address(0)) revert NoTransferToNullAddress();
+        require(_recipient != address(0), NoTransferToNullAddress());
         LibAsset.transferToken(_token, _recipient, _amount);
         emit TokenRecovered(_token, _recipient, _amount);
     }
@@ -121,7 +117,7 @@ abstract contract DZapAdmin is DZapTokenHandler, Pausable {
     /// @param _recipient Recovery recipient address
     /// @param _id Token ID to recover
     function recoverERC721(address _token, address _recipient, uint256 _id) external onlyOwner {
-        if (_recipient == address(0)) revert NoTransferToNullAddress();
+        require(_recipient != address(0), NoTransferToNullAddress());
         LibAsset.transferERC721(_token, _recipient, _id);
         emit ERC721Recovered(_token, _recipient, _id);
     }
@@ -132,7 +128,7 @@ abstract contract DZapAdmin is DZapTokenHandler, Pausable {
     /// @param _ids Array of token IDs to recover
     /// @param _amounts Array of amounts to recover for each ID
     function recoverERC1155(address _token, address _recipient, uint256[] calldata _ids, uint256[] calldata _amounts) external onlyOwner {
-        if (_recipient == address(0)) revert NoTransferToNullAddress();
+        require(_recipient != address(0), NoTransferToNullAddress());
         LibAsset.transferBatchERC1155(_token, _recipient, _ids, _amounts);
         emit ERC1155Recovered(_token, _recipient, _ids, _amounts);
     }

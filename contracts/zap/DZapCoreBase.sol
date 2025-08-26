@@ -66,6 +66,7 @@ abstract contract DZapCoreBase is Ownable, ERC721Holder, ERC1155Holder, Reentran
     event AdminRemoved(address indexed admin);
     event SelectorsBlacklistingUpdated(bytes4[] selectors, bool whitelisted);
     event AdaptersWhitelistingUpdated(address[] adapters, bool whitelisted);
+    event Erc1155SpenderWhitelistingUpdated(address[] spenders, bool whitelisted);
     event TokenRecovered(address indexed token, address indexed recipient, uint256 amount);
     event ERC721Recovered(address indexed token, address indexed recipient, uint256 indexed tokenId);
     event ERC1155Recovered(address indexed token, address indexed recipient, uint256[] tokenIds, uint256[] amounts);
@@ -76,15 +77,13 @@ abstract contract DZapCoreBase is Ownable, ERC721Holder, ERC1155Holder, Reentran
 
     /// @notice Restricts access to owner or admin
     modifier onlyOwnerOrAdmin() {
-        if (msg.sender != owner() && !admins[msg.sender]) {
-            revert CallerIsNotOwnerOrAdmin();
-        }
+        require(msg.sender == owner() || admins[msg.sender], CallerIsNotOwnerOrAdmin());
         _;
     }
 
     /// @notice Validates dust receiver address
     modifier validDustReceiver(address _dustReceiver) {
-        if (_dustReceiver == address(0)) revert NoTransferToNullAddress();
+        require(_dustReceiver != address(0), NoTransferToNullAddress());
         _;
     }
 
@@ -120,12 +119,8 @@ abstract contract DZapCoreBase is Ownable, ERC721Holder, ERC1155Holder, Reentran
         bytes32 _uniswapPermit2BytecodeHash,
         bytes32 _salt
     ) Ownable(_owner) {
-        if (_zapVerifier == address(0) || _permit2 == address(0)) {
-            revert ZeroAddress();
-        }
-        if (_protocolFeeVault == address(0) || _protocolFeeVault == address(this)) {
-            revert InvalidProtocolFeeVault();
-        }
+        require(_zapVerifier != address(0) && _permit2 != address(0), ZeroAddress());
+        require(_protocolFeeVault != address(0) && _protocolFeeVault != address(this), InvalidProtocolFeeVault());
 
         protocolFeeVault = _protocolFeeVault;
         zapVerifier = _zapVerifier;

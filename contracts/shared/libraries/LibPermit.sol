@@ -46,7 +46,7 @@ library LibPermit {
             permit2Contract.permit(_owner, PermitSingle(PermitDetails(_token, _amount, expiration, nonce), _spender, sigDeadline), signature)
         {} catch Error(string memory reason) {
             (uint256 currentAllowance, uint256 allowanceExpiration, ) = permit2Contract.allowance(_owner, _token, _spender);
-            if (currentAllowance < _amount || allowanceExpiration < block.timestamp) revert InvalidPermit(reason);
+            require(currentAllowance >= _amount && allowanceExpiration >= block.timestamp, InvalidPermit(reason));
         }
     }
 

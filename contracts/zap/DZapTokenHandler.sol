@@ -173,9 +173,7 @@ abstract contract DZapTokenHandler is DZapVerification {
         uint256 currentBalance = LibAsset.getBalance(_outputToken.tokenAddress, recipient);
         uint256 returnAmount = currentBalance - _initialBalance;
 
-        if (returnAmount < _outputToken.minReturn) {
-            revert InvalidReturnAmount(returnAmount, _outputToken.minReturn);
-        }
+        require(returnAmount >= _outputToken.minReturn, InvalidReturnAmount(returnAmount, _outputToken.minReturn));
 
         if (_outputToken.transferType == OutputTransferType.ReceiveAndTransfer) {
             require(_outputToken.feeAmount <= returnAmount, FeeExceedsReturnAmount(returnAmount, _outputToken.feeAmount));
@@ -192,9 +190,7 @@ abstract contract DZapTokenHandler is DZapVerification {
         uint256 currentBalance = LibAsset.getBalance(_outputToken.tokenAddress, recipient);
         uint256 returnAmount = currentBalance - _initialBalance;
 
-        if (returnAmount < _outputToken.minReturn) {
-            revert InvalidReturnAmount(returnAmount, _outputToken.minReturn);
-        }
+        require(returnAmount >= _outputToken.minReturn, InvalidReturnAmount(returnAmount, _outputToken.minReturn));
 
         if (_outputToken.transferType == OutputTransferType.ReceiveAndTransfer) {
             uint256 transferAmount = returnAmount - _outputToken.feeAmount;
@@ -208,9 +204,7 @@ abstract contract DZapTokenHandler is DZapVerification {
         address recipient = _getRecipient(_outputToken);
         address tokenOwner = LibAsset.getOwnerOfERC721(_outputToken.tokenAddress, _outputToken.tokenId);
 
-        if (recipient != tokenOwner) {
-            revert InvalidTokenOwner(_outputToken.tokenId);
-        }
+        require(recipient == tokenOwner, InvalidTokenOwner(_outputToken.tokenId));
 
         if (_outputToken.transferType == OutputTransferType.ReceiveAndTransfer) {
             LibAsset.transferERC721(_outputToken.tokenAddress, _outputToken.recipient, _outputToken.tokenId);
@@ -225,9 +219,7 @@ abstract contract DZapTokenHandler is DZapVerification {
         uint256 currentBalance = LibAsset.getBalanceOfERC1155(_outputToken.tokenAddress, recipient, _outputToken.tokenId);
         uint256 returnAmount = currentBalance - _initialBalance;
 
-        if (returnAmount < _outputToken.minReturn) {
-            revert InvalidReturnAmount(returnAmount, _outputToken.minReturn);
-        }
+        require(returnAmount >= _outputToken.minReturn, InvalidReturnAmount(returnAmount, _outputToken.minReturn));
 
         if (_outputToken.transferType == OutputTransferType.ReceiveAndTransfer) {
             LibAsset.transferERC1155(_outputToken.tokenAddress, address(this), _outputToken.recipient, _outputToken.tokenId, returnAmount);

@@ -21,7 +21,7 @@ abstract contract DZapTokenHandler is DZapVerification {
         uint256 length = _inputTokens.length;
 
         for (uint256 i; i < length; ++i) {
-            InputToken memory inputToken = _inputTokens[i];
+            InputToken calldata inputToken = _inputTokens[i];
 
             if (inputToken.tokenType == TokenType.NATIVE) {
                 _handleNativeInput(inputToken, _spender);
@@ -39,7 +39,7 @@ abstract contract DZapTokenHandler is DZapVerification {
     /// @notice Handles native token input operations
     /// @param _inputToken Input token specification
     /// @param _spender Address to transfer to
-    function _handleNativeInput(InputToken memory _inputToken, address _spender) private {
+    function _handleNativeInput(InputToken calldata _inputToken, address _spender) private {
         if (_inputToken.transferType == InputTransferType.TransferToSpender) {
             LibAsset.transferNativeToken(_spender, _inputToken.amount);
         }
@@ -48,7 +48,7 @@ abstract contract DZapTokenHandler is DZapVerification {
     /// @notice Handles ERC20 token input operations
     /// @param _inputToken Input token specification
     /// @param _spender Address to approve/transfer to
-    function _handleErc20Input(InputToken memory _inputToken, address _spender) private {
+    function _handleErc20Input(InputToken calldata _inputToken, address _spender) private {
         if (_inputToken.transferType == InputTransferType.ApproveForSpender) {
             LibAsset.maxApproveERC20(_inputToken.tokenAddress, _spender, _inputToken.amount);
         } else if (_inputToken.transferType == InputTransferType.TransferToSpender) {
@@ -61,7 +61,7 @@ abstract contract DZapTokenHandler is DZapVerification {
     /// @notice Handles ERC721 token input operations
     /// @param _inputToken Input token specification
     /// @param _spender Address to approve/transfer to
-    function _handleErc721Input(InputToken memory _inputToken, address _user, address _spender) private {
+    function _handleErc721Input(InputToken calldata _inputToken, address _user, address _spender) private {
         if (_inputToken.transferType == InputTransferType.ApproveForSpender) {
             address currentOwner = LibAsset.getOwnerOfERC721(_inputToken.tokenAddress, _inputToken.tokenId);
             if (currentOwner != address(this)) {
@@ -78,7 +78,7 @@ abstract contract DZapTokenHandler is DZapVerification {
     /// @notice Handles ERC1155 token input operations
     /// @param _inputToken Input token specification
     /// @param _spender Address to approve/transfer to
-    function _handleErc1155Input(InputToken memory _inputToken, address _user, address _spender) private {
+    function _handleErc1155Input(InputToken calldata _inputToken, address _user, address _spender) private {
         require(_allowedErc1155Spender[_spender], Erc1155SpenderNotWhitelisted(_spender));
 
         if (_inputToken.transferType == InputTransferType.DirectTransferToSpender) {
@@ -131,7 +131,7 @@ abstract contract DZapTokenHandler is DZapVerification {
         initialBalances = new uint256[](length);
 
         for (uint256 i; i < length; ++i) {
-            OutputToken memory outputToken = _outputTokens[i];
+            OutputToken calldata outputToken = _outputTokens[i];
 
             if (outputToken.transferType == OutputTransferType.ReceiveInContract) {
                 require(outputToken.recipient == address(this), InvalidRecipient());
@@ -235,7 +235,7 @@ abstract contract DZapTokenHandler is DZapVerification {
     /// @notice Determines the actual recipient address for output tokens
     /// @param _outputToken Output token specification
     /// @return recipient The actual recipient address
-    function _getRecipient(OutputToken memory _outputToken) private view returns (address recipient) {
+    function _getRecipient(OutputToken calldata _outputToken) private view returns (address recipient) {
         recipient = _outputToken.transferType == OutputTransferType.ReceiveAndTransfer ? address(this) : _outputToken.recipient;
     }
 

@@ -134,6 +134,10 @@ library LibAsset {
         IERC1155(_token).setApprovalForAll(_spender, true);
     }
 
+    function isErc1155ApprovedForAll(address _token, address _operator, address _spender) internal view returns (bool) {
+        return IERC1155(_token).isApprovedForAll(_operator, _spender);
+    }
+
     function revokeERC1155(address _token, address _spender) internal {
         IERC1155(_token).setApprovalForAll(_spender, false);
     }

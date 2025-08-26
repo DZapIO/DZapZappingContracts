@@ -26,4 +26,5 @@ error UniswapPermit2ByteCodeMismatch();
 error UnauthorizedCall(address callTo);
 error ZapExecutionFailed(address target, bytes4 funSig, bytes reason);
 error SelectorNotAllowed(address target, bytes4 selector);
+error Erc1155SpenderNotWhitelisted(address spender);
 error ProtectedSelector(bytes4 selector);

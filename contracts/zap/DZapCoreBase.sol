@@ -28,6 +28,7 @@ abstract contract DZapCoreBase is Ownable, ERC721Holder, ERC1155Holder, Reentran
     mapping(address admin => bool isAdmin) public admins;
     mapping(bytes4 selector => bool isBlocked) public blockedSelectors;
     mapping(address adapter => bool isWhitelisted) internal _adaptersAllowlist;
+    mapping(address spender => bool isWhitelisted) internal _allowedErc1155Spender;
 
     // ============= IMMUTABLE VARIABLES =============
     address public immutable UNISWAP_PERMIT2;
@@ -98,6 +99,10 @@ abstract contract DZapCoreBase is Ownable, ERC721Holder, ERC1155Holder, Reentran
 
     function isAdapterWhitelisted(address adapter) public view returns (bool isWhitelisted) {
         return _adaptersAllowlist[adapter];
+    }
+
+    function isErc1155SpenderWhitelisted(address spender) public view returns (bool isWhitelisted) {
+        return _allowedErc1155Spender[spender];
     }
 
     // ============= CONSTRUCTOR =============

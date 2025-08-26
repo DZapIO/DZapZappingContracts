@@ -4,7 +4,7 @@ pragma solidity 0.8.30;
 import { LibAsset } from "../shared/libraries/LibAsset.sol";
 import { DZapVerification } from "./DZapVerification.sol";
 import { InputToken, OutputToken, TokenType, InputTransferType, OutputTransferType, TokenInfo, FeeConfig } from "./Types.sol";
-import { InvalidTokenOwner, InvalidReturnAmount, InvalidRecipient, FeeExceedsReturnAmount } from "./Errors.sol";
+import { InvalidTokenOwner, InvalidReturnAmount, InvalidRecipient, FeeExceedsReturnAmount, Erc1155SpenderNotWhitelisted } from "./Errors.sol";
 
 /// @title DZapTokenHandler
 /// @author DZap
@@ -16,8 +16,8 @@ abstract contract DZapTokenHandler is DZapVerification {
     /// @notice Processes all input tokens for a zap operation
     /// @param _inputTokens Array of input token specifications
     /// @param _spender Address to approve/transfer tokens to
-    /// @return needsErc1155Revoke Whether any ERC1155 approvals need to be revoked later
-    function _processInputTokens(InputToken[] calldata _inputTokens, address _user, address _spender) internal returns (bool needsErc1155Revoke) {
+    /// @return hasErc1155AsInput Whether any ERC1155 tokens are being used as input
+    function _processInputTokens(InputToken[] calldata _inputTokens, address _user, address _spender) internal returns (bool hasErc1155AsInput) {
         uint256 length = _inputTokens.length;
 
         for (uint256 i; i < length; ++i) {
@@ -30,7 +30,8 @@ abstract contract DZapTokenHandler is DZapVerification {
             } else if (inputToken.tokenType == TokenType.ERC721) {
                 _handleErc721Input(inputToken, _user, _spender);
             } else if (inputToken.tokenType == TokenType.ERC1155) {
-                needsErc1155Revoke = _handleErc1155Input(inputToken, _user, _spender);
+                hasErc1155AsInput = true;
+                _handleErc1155Input(inputToken, _user, _spender);
             }
         }
     }
@@ -77,11 +78,12 @@ abstract contract DZapTokenHandler is DZapVerification {
     /// @notice Handles ERC1155 token input operations
     /// @param _inputToken Input token specification
     /// @param _spender Address to approve/transfer to
-    /// @return needsRevoke Whether approval should be revoked after execution
-    function _handleErc1155Input(InputToken memory _inputToken, address _user, address _spender) private returns (bool needsRevoke) {
+    function _handleErc1155Input(InputToken memory _inputToken, address _user, address _spender) private {
+        require(_allowedErc1155Spender[_spender], Erc1155SpenderNotWhitelisted(_spender));
+
         if (_inputToken.transferType == InputTransferType.DirectTransferToSpender) {
             LibAsset.transferERC1155(_inputToken.tokenAddress, _user, _spender, _inputToken.tokenId, _inputToken.amount);
-            return false;
+            return;
         }
 
         uint256 currentBalance = LibAsset.getBalanceOfERC1155(_inputToken.tokenAddress, address(this), _inputToken.tokenId);
@@ -92,8 +94,9 @@ abstract contract DZapTokenHandler is DZapVerification {
         }
 
         if (_inputToken.transferType == InputTransferType.ApproveForSpender) {
-            needsRevoke = true;
-            LibAsset.approveERC1155(_inputToken.tokenAddress, _spender);
+            if (!LibAsset.isErc1155ApprovedForAll(_inputToken.tokenAddress, address(this), _spender)) {
+                LibAsset.approveERC1155(_inputToken.tokenAddress, _spender);
+            }
         } else if (_inputToken.transferType == InputTransferType.TransferToSpender) {
             LibAsset.transferERC1155(_inputToken.tokenAddress, address(this), _spender, _inputToken.tokenId, _inputToken.amount);
         }
@@ -105,8 +108,11 @@ abstract contract DZapTokenHandler is DZapVerification {
     function _revokeErc1155Approvals(InputToken[] calldata _inputTokens, address _spender) internal {
         uint256 length = _inputTokens.length;
         for (uint256 i; i < length; ++i) {
-            if (_inputTokens[i].tokenType == TokenType.ERC1155 && _inputTokens[i].transferType == InputTransferType.ApproveForSpender) {
-                LibAsset.revokeERC1155(_inputTokens[i].tokenAddress, _spender);
+            InputToken calldata inputToken = _inputTokens[i];
+            if (inputToken.tokenType == TokenType.ERC1155) {
+                if (LibAsset.isErc1155ApprovedForAll(inputToken.tokenAddress, address(this), _spender)) {
+                    LibAsset.revokeERC1155(inputToken.tokenAddress, _spender);
+                }
             }
         }
     }

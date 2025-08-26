@@ -56,7 +56,7 @@ abstract contract DZapAdmin is DZapCoreBase, Pausable {
         emit AdminRemoved(_account);
     }
 
-    // ============= ADAPTER AND SELECTOR MANAGEMENT =============
+    // ============= WHITELIST MANAGEMENT =============
 
     /// @notice Updates adapter whitelist status for multiple addresses
     /// @param _adapters Array of adapter addresses to update
@@ -71,6 +71,21 @@ abstract contract DZapAdmin is DZapCoreBase, Pausable {
         }
 
         emit AdaptersWhitelistingUpdated(_adapters, _whitelisted);
+    }
+
+    /// @notice Updates ERC1155 spender whitelist status for multiple addresses
+    /// @param _spenders Array of spender addresses to update
+    /// @param _whitelisted Whether spenders should be whitelisted
+    function whitelistErc1155Spender(address[] calldata _spenders, bool _whitelisted) external onlyOwner {
+        uint256 length = _spenders.length;
+
+        for (uint256 i; i < length; ++i) {
+            address spender = _spenders[i];
+            require(spender != address(0), ZeroAddress());
+            _allowedErc1155Spender[spender] = _whitelisted;
+        }
+
+        emit Erc1155SpenderWhitelistingUpdated(_spenders, _whitelisted);
     }
 
     /// @notice Blocks multiple selectors

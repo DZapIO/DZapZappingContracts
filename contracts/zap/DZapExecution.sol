@@ -41,7 +41,7 @@ abstract contract DZapExecution is DZapTokenHandler {
         uint256 length = _zapData.length;
 
         for (uint256 i; i < length; ++i) {
-            bool needsErc1155Revoke = _processInputTokens(_zapData[i].inputTokens, _user, _zapData[i].approveTo);
+            bool hasErc1155AsInput = _processInputTokens(_zapData[i].inputTokens, _user, _zapData[i].approveTo);
 
             uint256[] memory initialOutputBalances = _getOutputTokensInitialBalances(_zapData[i].outputTokens, _zapData[i].nativeValue);
 
@@ -49,7 +49,7 @@ abstract contract DZapExecution is DZapTokenHandler {
 
             _processOutputTokens(_zapData[i].outputTokens, initialOutputBalances);
 
-            if (needsErc1155Revoke) {
+            if (hasErc1155AsInput) {
                 _revokeErc1155Approvals(_zapData[i].inputTokens, _zapData[i].approveTo);
             }
         }

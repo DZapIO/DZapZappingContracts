@@ -6,6 +6,7 @@
   "error ECDSAInvalidSignatureLength(uint256 length)",
   "error ECDSAInvalidSignatureS(bytes32 s)",
   "error EnforcedPause()",
+  "error Erc1155SpenderNotWhitelisted(address spender)",
   "error ExpectedPause()",
   "error FeeExceedsReturnAmount(uint256 returnAmount, uint256 feeAmount)",
   "error IntegratorIsZeroAddress()",
@@ -37,6 +38,7 @@
   "event AdminRemoved(address indexed admin)",
   "event ERC1155Recovered(address indexed token, address indexed recipient, uint256[] tokenIds, uint256[] amounts)",
   "event ERC721Recovered(address indexed token, address indexed recipient, uint256 indexed tokenId)",
+  "event Erc1155SpenderWhitelistingUpdated(address[] spenders, bool whitelisted)",
   "event GaslessZapped(bytes32 indexed transactionId, address executor, address indexed user, address indexed integrator, bytes crosschainData)",
   "event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)",
   "event Paused(address account)",
@@ -55,6 +57,7 @@
   "function blockedSelectors(bytes4 selector) view returns (bool isBlocked)",
   "function executeZap(bytes32 _transactionId, bytes _crosschainData, bytes _zapVerificationSignature, bytes _userIntentSignature, uint256 _zapDeadline, uint256 _userIntentDeadline, address _user, address _dustReceiver, tuple(address token, uint256 amount, bytes permit)[] _inputTokens, tuple(address integrator, tuple(address token, uint256 integratorFeeAmount, uint256 protocolFeeAmount)[] fees) _feeConfig, tuple(address token, uint256 amount)[] _executorFeeInfo, tuple(address callTo, address approveTo, bytes callData, bool isDelegateCall, uint256 nativeValue, tuple(uint8 tokenType, uint8 transferType, address tokenAddress, uint256 amount, uint256 tokenId)[] inputTokens, tuple(uint8 tokenType, uint8 transferType, address tokenAddress, address recipient, uint96 feeAmount, uint256 minReturn, uint256 tokenId)[] outputTokens)[] _zapData, address[] _sweepDust) payable",
   "function isAdapterWhitelisted(address adapter) view returns (bool isWhitelisted)",
+  "function isErc1155SpenderWhitelisted(address spender) view returns (bool isWhitelisted)",
   "function nonce(address user) view returns (uint256 nonce)",
   "function onERC1155BatchReceived(address, address, uint256[], uint256[], bytes) returns (bytes4)",
   "function onERC1155Received(address, address, uint256, uint256, bytes) returns (bytes4)",
@@ -77,6 +80,7 @@
   "function unpause()",
   "function updateToUniswapPermit2()",
   "function whitelistAdapters(address[] _adapters, bool _whitelisted)",
+  "function whitelistErc1155Spender(address[] _spenders, bool _whitelisted)",
   "function zap(bytes32 _transactionId, bytes _crosschainData, bytes _zapVerificationSignature, uint256 _deadline, address _dustReceiver, tuple(address token, uint256 amount, bytes permit)[] _inputTokens, tuple(address integrator, tuple(address token, uint256 integratorFeeAmount, uint256 protocolFeeAmount)[] fees) _feeConfig, tuple(address callTo, address approveTo, bytes callData, bool isDelegateCall, uint256 nativeValue, tuple(uint8 tokenType, uint8 transferType, address tokenAddress, uint256 amount, uint256 tokenId)[] inputTokens, tuple(uint8 tokenType, uint8 transferType, address tokenAddress, address recipient, uint96 feeAmount, uint256 minReturn, uint256 tokenId)[] outputTokens)[] _zapData, address[] _sweepDust) payable",
   "function zapVerifier() view returns (address)"
 ]

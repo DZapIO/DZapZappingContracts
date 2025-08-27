@@ -83,6 +83,17 @@
     "type": "error"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      }
+    ],
+    "name": "Erc1155SpenderNotWhitelisted",
+    "type": "error"
+  },
+  {
     "inputs": [],
     "name": "ExpectedPause",
     "type": "error"
@@ -402,6 +413,25 @@
       }
     ],
     "name": "ERC721Recovered",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address[]",
+        "name": "spenders",
+        "type": "address[]"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "whitelisted",
+        "type": "bool"
+      }
+    ],
+    "name": "Erc1155SpenderWhitelistingUpdated",
     "type": "event"
   },
   {
@@ -938,6 +968,25 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      }
+    ],
+    "name": "isErc1155SpenderWhitelisted",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "isWhitelisted",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "user",
         "type": "address"
       }
@@ -1317,6 +1366,24 @@
       }
     ],
     "name": "whitelistAdapters",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "_spenders",
+        "type": "address[]"
+      },
+      {
+        "internalType": "bool",
+        "name": "_whitelisted",
+        "type": "bool"
+      }
+    ],
+    "name": "whitelistErc1155Spender",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

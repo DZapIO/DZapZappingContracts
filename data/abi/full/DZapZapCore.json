@@ -741,6 +741,238 @@
         "type": "uint256"
       },
       {
+        "internalType": "uint256",
+        "name": "_userIntentDeadline",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_dustReceiver",
+        "type": "address"
+      },
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "token",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bytes",
+            "name": "permit",
+            "type": "bytes"
+          }
+        ],
+        "internalType": "struct InputErc20Tokens[]",
+        "name": "_inputTokens",
+        "type": "tuple[]"
+      },
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "integrator",
+            "type": "address"
+          },
+          {
+            "components": [
+              {
+                "internalType": "address",
+                "name": "token",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "integratorFeeAmount",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "protocolFeeAmount",
+                "type": "uint256"
+              }
+            ],
+            "internalType": "struct Fees[]",
+            "name": "fees",
+            "type": "tuple[]"
+          }
+        ],
+        "internalType": "struct FeeConfig",
+        "name": "_feeConfig",
+        "type": "tuple"
+      },
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "token",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct TokenInfo[]",
+        "name": "_executorFeeInfo",
+        "type": "tuple[]"
+      },
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "callTo",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "approveTo",
+            "type": "address"
+          },
+          {
+            "internalType": "bytes",
+            "name": "callData",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bool",
+            "name": "isDelegateCall",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint256",
+            "name": "nativeValue",
+            "type": "uint256"
+          },
+          {
+            "components": [
+              {
+                "internalType": "enum TokenType",
+                "name": "tokenType",
+                "type": "uint8"
+              },
+              {
+                "internalType": "enum InputTransferType",
+                "name": "transferType",
+                "type": "uint8"
+              },
+              {
+                "internalType": "address",
+                "name": "tokenAddress",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "tokenId",
+                "type": "uint256"
+              }
+            ],
+            "internalType": "struct InputToken[]",
+            "name": "inputTokens",
+            "type": "tuple[]"
+          },
+          {
+            "components": [
+              {
+                "internalType": "enum TokenType",
+                "name": "tokenType",
+                "type": "uint8"
+              },
+              {
+                "internalType": "enum OutputTransferType",
+                "name": "transferType",
+                "type": "uint8"
+              },
+              {
+                "internalType": "address",
+                "name": "tokenAddress",
+                "type": "address"
+              },
+              {
+                "internalType": "address",
+                "name": "recipient",
+                "type": "address"
+              },
+              {
+                "internalType": "uint96",
+                "name": "feeAmount",
+                "type": "uint96"
+              },
+              {
+                "internalType": "uint256",
+                "name": "minReturn",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "tokenId",
+                "type": "uint256"
+              }
+            ],
+            "internalType": "struct OutputToken[]",
+            "name": "outputTokens",
+            "type": "tuple[]"
+          }
+        ],
+        "internalType": "struct ZapData[]",
+        "name": "_zapData",
+        "type": "tuple[]"
+      },
+      {
+        "internalType": "address[]",
+        "name": "_sweepDust",
+        "type": "address[]"
+      }
+    ],
+    "name": "executeZap",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_transactionId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes",
+        "name": "_crosschainData",
+        "type": "bytes"
+      },
+      {
+        "internalType": "bytes",
+        "name": "_zapVerificationSignature",
+        "type": "bytes"
+      },
+      {
+        "internalType": "bytes",
+        "name": "_userIntentSignature",
+        "type": "bytes"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_zapDeadline",
+        "type": "uint256"
+      },
+      {
         "internalType": "address",
         "name": "_user",
         "type": "address"
@@ -947,239 +1179,7 @@
         "type": "address[]"
       }
     ],
-    "name": "executeZap",
-    "outputs": [],
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "_transactionId",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes",
-        "name": "_crosschainData",
-        "type": "bytes"
-      },
-      {
-        "internalType": "bytes",
-        "name": "_zapVerificationSignature",
-        "type": "bytes"
-      },
-      {
-        "internalType": "bytes",
-        "name": "_userIntentSignature",
-        "type": "bytes"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_zapDeadline",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_userIntentDeadline",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "_user",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_dustReceiver",
-        "type": "address"
-      },
-      {
-        "components": [
-          {
-            "internalType": "address",
-            "name": "token",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "amount",
-            "type": "uint256"
-          },
-          {
-            "internalType": "bytes",
-            "name": "permit",
-            "type": "bytes"
-          }
-        ],
-        "internalType": "struct InputErc20Tokens[]",
-        "name": "_inputTokens",
-        "type": "tuple[]"
-      },
-      {
-        "components": [
-          {
-            "internalType": "address",
-            "name": "integrator",
-            "type": "address"
-          },
-          {
-            "components": [
-              {
-                "internalType": "address",
-                "name": "token",
-                "type": "address"
-              },
-              {
-                "internalType": "uint256",
-                "name": "integratorFeeAmount",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "protocolFeeAmount",
-                "type": "uint256"
-              }
-            ],
-            "internalType": "struct Fees[]",
-            "name": "fees",
-            "type": "tuple[]"
-          }
-        ],
-        "internalType": "struct FeeConfig",
-        "name": "_feeConfig",
-        "type": "tuple"
-      },
-      {
-        "components": [
-          {
-            "internalType": "address",
-            "name": "token",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "amount",
-            "type": "uint256"
-          }
-        ],
-        "internalType": "struct TokenInfo[]",
-        "name": "_executorFeeInfo",
-        "type": "tuple[]"
-      },
-      {
-        "components": [
-          {
-            "internalType": "address",
-            "name": "callTo",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "approveTo",
-            "type": "address"
-          },
-          {
-            "internalType": "bytes",
-            "name": "callData",
-            "type": "bytes"
-          },
-          {
-            "internalType": "bool",
-            "name": "isDelegateCall",
-            "type": "bool"
-          },
-          {
-            "internalType": "uint256",
-            "name": "nativeValue",
-            "type": "uint256"
-          },
-          {
-            "components": [
-              {
-                "internalType": "enum TokenType",
-                "name": "tokenType",
-                "type": "uint8"
-              },
-              {
-                "internalType": "enum InputTransferType",
-                "name": "transferType",
-                "type": "uint8"
-              },
-              {
-                "internalType": "address",
-                "name": "tokenAddress",
-                "type": "address"
-              },
-              {
-                "internalType": "uint256",
-                "name": "amount",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "tokenId",
-                "type": "uint256"
-              }
-            ],
-            "internalType": "struct InputToken[]",
-            "name": "inputTokens",
-            "type": "tuple[]"
-          },
-          {
-            "components": [
-              {
-                "internalType": "enum TokenType",
-                "name": "tokenType",
-                "type": "uint8"
-              },
-              {
-                "internalType": "enum OutputTransferType",
-                "name": "transferType",
-                "type": "uint8"
-              },
-              {
-                "internalType": "address",
-                "name": "tokenAddress",
-                "type": "address"
-              },
-              {
-                "internalType": "address",
-                "name": "recipient",
-                "type": "address"
-              },
-              {
-                "internalType": "uint96",
-                "name": "feeAmount",
-                "type": "uint96"
-              },
-              {
-                "internalType": "uint256",
-                "name": "minReturn",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "tokenId",
-                "type": "uint256"
-              }
-            ],
-            "internalType": "struct OutputToken[]",
-            "name": "outputTokens",
-            "type": "tuple[]"
-          }
-        ],
-        "internalType": "struct ZapData[]",
-        "name": "_zapData",
-        "type": "tuple[]"
-      },
-      {
-        "internalType": "address[]",
-        "name": "_sweepDust",
-        "type": "address[]"
-      }
-    ],
-    "name": "executeZap",
+    "name": "executeZapWithWitness",
     "outputs": [],
     "stateMutability": "payable",
     "type": "function"
@@ -1645,6 +1645,219 @@
         "type": "bytes"
       },
       {
+        "internalType": "uint256",
+        "name": "_deadline",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_dustReceiver",
+        "type": "address"
+      },
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "token",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bytes",
+            "name": "permit",
+            "type": "bytes"
+          }
+        ],
+        "internalType": "struct InputErc20Tokens[]",
+        "name": "_inputTokens",
+        "type": "tuple[]"
+      },
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "integrator",
+            "type": "address"
+          },
+          {
+            "components": [
+              {
+                "internalType": "address",
+                "name": "token",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "integratorFeeAmount",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "protocolFeeAmount",
+                "type": "uint256"
+              }
+            ],
+            "internalType": "struct Fees[]",
+            "name": "fees",
+            "type": "tuple[]"
+          }
+        ],
+        "internalType": "struct FeeConfig",
+        "name": "_feeConfig",
+        "type": "tuple"
+      },
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "callTo",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "approveTo",
+            "type": "address"
+          },
+          {
+            "internalType": "bytes",
+            "name": "callData",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bool",
+            "name": "isDelegateCall",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint256",
+            "name": "nativeValue",
+            "type": "uint256"
+          },
+          {
+            "components": [
+              {
+                "internalType": "enum TokenType",
+                "name": "tokenType",
+                "type": "uint8"
+              },
+              {
+                "internalType": "enum InputTransferType",
+                "name": "transferType",
+                "type": "uint8"
+              },
+              {
+                "internalType": "address",
+                "name": "tokenAddress",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "tokenId",
+                "type": "uint256"
+              }
+            ],
+            "internalType": "struct InputToken[]",
+            "name": "inputTokens",
+            "type": "tuple[]"
+          },
+          {
+            "components": [
+              {
+                "internalType": "enum TokenType",
+                "name": "tokenType",
+                "type": "uint8"
+              },
+              {
+                "internalType": "enum OutputTransferType",
+                "name": "transferType",
+                "type": "uint8"
+              },
+              {
+                "internalType": "address",
+                "name": "tokenAddress",
+                "type": "address"
+              },
+              {
+                "internalType": "address",
+                "name": "recipient",
+                "type": "address"
+              },
+              {
+                "internalType": "uint96",
+                "name": "feeAmount",
+                "type": "uint96"
+              },
+              {
+                "internalType": "uint256",
+                "name": "minReturn",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "tokenId",
+                "type": "uint256"
+              }
+            ],
+            "internalType": "struct OutputToken[]",
+            "name": "outputTokens",
+            "type": "tuple[]"
+          }
+        ],
+        "internalType": "struct ZapData[]",
+        "name": "_zapData",
+        "type": "tuple[]"
+      },
+      {
+        "internalType": "address[]",
+        "name": "_sweepDust",
+        "type": "address[]"
+      }
+    ],
+    "name": "zap",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "zapVerifier",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_transactionId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes",
+        "name": "_crosschainData",
+        "type": "bytes"
+      },
+      {
+        "internalType": "bytes",
+        "name": "_zapVerificationSignature",
+        "type": "bytes"
+      },
+      {
         "internalType": "bytes",
         "name": "_batchDepositSignature",
         "type": "bytes"
@@ -1839,222 +2052,9 @@
         "type": "address[]"
       }
     ],
-    "name": "zap",
+    "name": "zapWithBatchDeposit",
     "outputs": [],
     "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "_transactionId",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes",
-        "name": "_crosschainData",
-        "type": "bytes"
-      },
-      {
-        "internalType": "bytes",
-        "name": "_zapVerificationSignature",
-        "type": "bytes"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_deadline",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "_dustReceiver",
-        "type": "address"
-      },
-      {
-        "components": [
-          {
-            "internalType": "address",
-            "name": "token",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "amount",
-            "type": "uint256"
-          },
-          {
-            "internalType": "bytes",
-            "name": "permit",
-            "type": "bytes"
-          }
-        ],
-        "internalType": "struct InputErc20Tokens[]",
-        "name": "_inputTokens",
-        "type": "tuple[]"
-      },
-      {
-        "components": [
-          {
-            "internalType": "address",
-            "name": "integrator",
-            "type": "address"
-          },
-          {
-            "components": [
-              {
-                "internalType": "address",
-                "name": "token",
-                "type": "address"
-              },
-              {
-                "internalType": "uint256",
-                "name": "integratorFeeAmount",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "protocolFeeAmount",
-                "type": "uint256"
-              }
-            ],
-            "internalType": "struct Fees[]",
-            "name": "fees",
-            "type": "tuple[]"
-          }
-        ],
-        "internalType": "struct FeeConfig",
-        "name": "_feeConfig",
-        "type": "tuple"
-      },
-      {
-        "components": [
-          {
-            "internalType": "address",
-            "name": "callTo",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "approveTo",
-            "type": "address"
-          },
-          {
-            "internalType": "bytes",
-            "name": "callData",
-            "type": "bytes"
-          },
-          {
-            "internalType": "bool",
-            "name": "isDelegateCall",
-            "type": "bool"
-          },
-          {
-            "internalType": "uint256",
-            "name": "nativeValue",
-            "type": "uint256"
-          },
-          {
-            "components": [
-              {
-                "internalType": "enum TokenType",
-                "name": "tokenType",
-                "type": "uint8"
-              },
-              {
-                "internalType": "enum InputTransferType",
-                "name": "transferType",
-                "type": "uint8"
-              },
-              {
-                "internalType": "address",
-                "name": "tokenAddress",
-                "type": "address"
-              },
-              {
-                "internalType": "uint256",
-                "name": "amount",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "tokenId",
-                "type": "uint256"
-              }
-            ],
-            "internalType": "struct InputToken[]",
-            "name": "inputTokens",
-            "type": "tuple[]"
-          },
-          {
-            "components": [
-              {
-                "internalType": "enum TokenType",
-                "name": "tokenType",
-                "type": "uint8"
-              },
-              {
-                "internalType": "enum OutputTransferType",
-                "name": "transferType",
-                "type": "uint8"
-              },
-              {
-                "internalType": "address",
-                "name": "tokenAddress",
-                "type": "address"
-              },
-              {
-                "internalType": "address",
-                "name": "recipient",
-                "type": "address"
-              },
-              {
-                "internalType": "uint96",
-                "name": "feeAmount",
-                "type": "uint96"
-              },
-              {
-                "internalType": "uint256",
-                "name": "minReturn",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "tokenId",
-                "type": "uint256"
-              }
-            ],
-            "internalType": "struct OutputToken[]",
-            "name": "outputTokens",
-            "type": "tuple[]"
-          }
-        ],
-        "internalType": "struct ZapData[]",
-        "name": "_zapData",
-        "type": "tuple[]"
-      },
-      {
-        "internalType": "address[]",
-        "name": "_sweepDust",
-        "type": "address[]"
-      }
-    ],
-    "name": "zap",
-    "outputs": [],
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "zapVerifier",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {

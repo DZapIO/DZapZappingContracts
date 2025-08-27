@@ -40,7 +40,7 @@ interface IDZapZapCore {
     /// @param _feeConfig Fee distribution configuration
     /// @param _zapData Array of zap execution data
     /// @param _sweepDust Token addresses to sweep as dust
-    function zap(
+    function zapWithBatchDeposit(
         bytes32 _transactionId,
         bytes calldata _crosschainData,
         bytes calldata _zapVerificationSignature,
@@ -96,7 +96,7 @@ interface IDZapZapCore {
     /// @param _executorFeeInfo Executor fee information
     /// @param _zapData Array of zap execution data
     /// @param _sweepDust Token addresses to sweep as dust
-    function executeZap(
+    function executeZapWithWitness(
         bytes32 _transactionId,
         bytes calldata _crosschainData,
         bytes calldata _zapVerificationSignature,

@@ -92,7 +92,7 @@ contract DZapZapCore is ReentrancyGuard, DZapExecution, IDZapZapCore {
     }
 
     /// @inheritdoc IDZapZapCore
-    function zap(
+    function zapWithBatchDeposit(
         bytes32 _transactionId,
         bytes calldata _crosschainData,
         bytes calldata _zapVerificationSignature,
@@ -174,7 +174,7 @@ contract DZapZapCore is ReentrancyGuard, DZapExecution, IDZapZapCore {
     }
 
     /// @inheritdoc IDZapZapCore
-    function executeZap(
+    function executeZapWithWitness(
         bytes32 _transactionId,
         bytes calldata _crosschainData,
         bytes calldata _zapVerificationSignature,

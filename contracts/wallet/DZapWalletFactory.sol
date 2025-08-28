@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { Pausable } from "@openzeppelin/contracts/utils/Pausable.sol";
 import { Clones } from "@openzeppelin/contracts/proxy/Clones.sol";
 
-import { ZeroAddress, InvalidWalletImp, AlreadyDeployed, AddressIsWallet, NoLabel } from "../shared/Errors.sol";
-
 import { IDZapWalletFactory } from "../interfaces/IDZapWalletFactory.sol";
 import { IDZapWallet } from "../interfaces/IDZapWallet.sol";
+
+import { ZeroAddress, InvalidWalletImp, AlreadyDeployed, AddressIsWallet, NoLabel } from "./Errors.sol";
 
 /*  
 ---------------------------------------------------------
@@ -103,7 +103,7 @@ contract DZapWalletFactory is Ownable, Pausable, IDZapWalletFactory {
     function _deploy(address _user, bytes32 _salt) internal returns (address wallet) {
         require(walletImp != address(0), InvalidWalletImp());
         require(_user != address(0), ZeroAddress());
-        
+
         wallet = Clones.cloneDeterministic(walletImp, _salt);
 
         IDZapWallet(payable(wallet)).initialize(_user, _salt);

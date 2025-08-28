@@ -20,7 +20,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // pragma solidity ^0.4.18;
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 contract WNATIVE {
     string public name = "Wrapped Token";

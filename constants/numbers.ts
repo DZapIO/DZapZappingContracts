@@ -1,9 +1,7 @@
-import { ethers, network } from 'hardhat'
-
 export const BPS_MULTIPLIER = 10000n
 export const BPS_DENOMINATOR = 100n * BPS_MULTIPLIER
 export const ZERO = 0n
-export const HARDHAT_CHAIN_ID = network.config.chainId as number
+export const HARDHAT_CHAIN_ID = 31337
 
 export const MaxUint48 = BigInt('0xffffffffffff')
 export const MaxUint160 = BigInt('0xffffffffffffffffffffffffffffffffffffffff')

@@ -1,10 +1,12 @@
 import axios from 'axios'
-import { JsonRpcProvider } from 'ethers'
+import { JsonRpcProvider, Wallet } from 'ethers'
 import { MulticallWrapper } from 'ethers-multicall-provider'
 import { HardhatUserConfig, HttpNetworkUserConfig } from 'hardhat/types'
 import { CHAIN_IDS, NETWORKS } from '../config/networks'
-import { ApiType } from '../types'
+import { ApiType, ChainId } from '../types'
 import { getAccountKey } from './wallet'
+import { dummyKey, NODE_ENV_VAR_NAMES } from '../constants'
+import { getEnvVar, replaceEnvInStr } from './envUtils'
 
 export const getHardhatNetworkConfig = (chainId: CHAIN_IDS, accounts?: any) => {
   if (!accounts) accounts = [getAccountKey()]
@@ -16,36 +18,21 @@ export const getHardhatNetworkConfig = (chainId: CHAIN_IDS, accounts?: any) => {
   }
 }
 
-export const getRpcUrl = (chainId: CHAIN_IDS): string => {
-  const network = getNetwork(chainId)
+export const getRpcUrl = (chainId: ChainId): string => {
+  const network = getNetwork(toChainId(chainId))
 
   let rpc = network.rpcUrl[0]
   if (!rpc) {
     throw new Error(`No RPC URL defined for chainId ${chainId}`)
   }
-
-  rpc = rpc.replace(/\$\{(\w+)\}/g, (_, envVar) => {
-    const value = process.env[envVar]
-    if (!value) {
-      throw new Error(`Environment variable ${envVar} is not set`)
-    }
-    return value
-  })
-
-  return rpc
+  return replaceEnvInStr(rpc)
 }
 
 export const getWorkingRpcUrl = async (chainId: CHAIN_IDS): Promise<string> => {
   const network = getNetwork(chainId)
 
   const rpcUrls = network.rpcUrl.map((url) => {
-    return url.replace(/\$\{(\w+)\}/g, (_, envVar) => {
-      const value = process.env[envVar]
-      if (!value) {
-        throw new Error(`Environment variable ${envVar} is not set`)
-      }
-      return value
-    })
+    return replaceEnvInStr(url)
   })
 
   const checks = rpcUrls.map((url) => checkRpc(url))
@@ -63,7 +50,11 @@ export const getNetworkConfig = (
   accounts?: string[]
 ) => {
   const config: { [networkName: string]: HttpNetworkUserConfig } = {}
-  if (!accounts) accounts = [getAccountKey()]
+  if (!accounts) {
+    const key = getAccountKey()
+    if (key === dummyKey) accounts = [Wallet.createRandom().privateKey]
+    else accounts = [key]
+  }
 
   chainIds.forEach((chainId) => {
     const network = getNetwork(chainId)
@@ -77,20 +68,33 @@ export const getNetworkConfig = (
   return config
 }
 
-export const getNetwork = (chainId: CHAIN_IDS) => {
-  const network = NETWORKS[chainId]
+export const toChainId = (chainId: ChainId): CHAIN_IDS => {
+  // check is chainId is of type CHAIN_IDS
+  if (!isValidChainId(chainId)) {
+    throw new Error(`Invalid chainId: ${chainId}`)
+  }
+  return chainId as CHAIN_IDS
+}
+
+export const isValidChainId = (chainId: ChainId): boolean => {
+  const chainIdStr = chainId.toString()
+  return Object.values(CHAIN_IDS).map(String).includes(chainIdStr)
+}
+
+export const getNetwork = (chainId: ChainId) => {
+  const network = NETWORKS[toChainId(chainId)]
   if (!network) {
     throw new Error(`Network with chainId ${chainId} not found`)
   }
   return network
 }
 
-export const getProvider = async (chainId: CHAIN_IDS) => {
+export const getProvider = async (chainId: ChainId) => {
   const rpcUrl = getRpcUrl(chainId)
   return new JsonRpcProvider(rpcUrl)
 }
 
-export const getMultiCallProvider = (chainId: CHAIN_IDS) => {
+export const getMultiCallProvider = (chainId: ChainId) => {
   const rpcUrl = getRpcUrl(chainId)
   return MulticallWrapper.wrap(new JsonRpcProvider(rpcUrl))
 }
@@ -110,13 +114,51 @@ export const getVerificationConfig = (chainIds: CHAIN_IDS[]) => {
   chainIds.forEach((chainId) => {
     const network = getNetwork(chainId)
 
+    if (network.apiType === ApiType.OTHER) {
+      if (!network.apiUrl) {
+        throw new Error(`No API URL defined for chainId ${chainId}`)
+      }
+
+      const apiKey = 'notNeeded'
+      config.etherscan!.apiKey![network.shortName] = apiKey
+
+      config.etherscan!.customChains!.push({
+        network: network.shortName,
+        chainId: chainId,
+        urls: {
+          apiURL: network.apiUrl,
+          browserURL: network.explorerUrl,
+        },
+      })
+    }
+
+    if (network.apiType === ApiType.ETHERSCAN_V1) {
+      if (!network.apiKeyName)
+        throw new Error(`${network.apiKeyName} is not defined`)
+
+      const apiKey = getEnvVar(network.apiKeyName)
+
+      config.etherscan!.apiKey![network.shortName] = apiKey
+
+      if (network.apiUrl)
+        config.etherscan!.customChains!.push({
+          network: network.shortName,
+          chainId: chainId,
+          urls: {
+            apiURL: network.apiUrl,
+            browserURL: network.explorerUrl,
+          },
+        })
+    }
+
     if (network.apiType === ApiType.ETHERSCAN_V2) {
       if (!network.apiUrl) {
         throw new Error(`No API URL defined for chainId ${chainId}`)
       }
 
-      config.etherscan!.apiKey![network.shortName] =
-        process.env.ETHERSCAN_V2_API_KEY || ''
+      config.etherscan!.apiKey![network.shortName] = getEnvVar(
+        NODE_ENV_VAR_NAMES.ETHERSCAN_V2_API_KEY
+      )
 
       config.etherscan!.customChains!.push({
         network: network.shortName,

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
@@ -69,6 +69,23 @@ contract MockErc721Dex is ERC721Holder {
         } else {
             IERC20(_token).transfer(_recipient, price);
         }
+    }
+
+    function swapNftToNft(
+        address _srcNftAddress,
+        address _destNftAddress,
+        address _recipient,
+        uint256 _srcNftId,
+        uint256 _destNftId,
+        bool _alreadyTransfered
+    ) external {
+        if (_alreadyTransfered) {
+            require(IERC721(_srcNftAddress).ownerOf(_srcNftId) == address(this), "NFT not transfered");
+        } else {
+            IERC721(_srcNftAddress).safeTransferFrom(msg.sender, address(this), _srcNftId);
+        }
+
+        IERC721(_destNftAddress).safeTransferFrom(address(this), _recipient, _destNftId);
     }
 
     function createSellOrder(address _nftAddress, address _token, uint256 _nftId, uint256 _price) external {

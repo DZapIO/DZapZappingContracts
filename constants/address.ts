@@ -1,4 +1,4 @@
-import { ethers } from 'hardhat'
+import { ethers } from 'ethers'
 
 export const NATIVE_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
 export const DZAP_NATIVE = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'

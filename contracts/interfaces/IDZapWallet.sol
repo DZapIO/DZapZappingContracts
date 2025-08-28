@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 interface IDZapWallet {
     // -------------EVENTS-------------
@@ -9,7 +9,7 @@ interface IDZapWallet {
     // -------------VIEWS-------------
 
     function getDomainSeparator() external view returns (bytes32);
-    
+
     // -------------EXTERNAL-------------
 
     function initialize(address _user, bytes32 _salt) external;

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 interface IAerodromeClGauge {
     /// @notice Used to deposit a CL position into the gauge

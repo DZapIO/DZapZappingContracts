@@ -12,6 +12,11 @@
   },
   {
     "inputs": [],
+    "name": "CallerIsNotOwnerOrExecutor",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "InvalidAccount",
     "type": "error"
   },
@@ -81,11 +86,6 @@
       }
     ],
     "name": "UnauthorizedCall",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "UnauthorizedCaller",
     "type": "error"
   },
   {

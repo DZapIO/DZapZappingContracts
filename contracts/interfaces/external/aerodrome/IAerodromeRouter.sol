@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 interface IAerodromeRouter {
     /// @notice Add liquidity of two tokens to a Pool
@@ -15,7 +15,17 @@ interface IAerodromeRouter {
     /// @return amountA         Amount of tokenA to actually deposit
     /// @return amountB         Amount of tokenB to actually deposit
     /// @return liquidity       Amount of liquidity token returned from deposit
-    function addLiquidity(address tokenA, address tokenB, bool stable, uint256 amountADesired, uint256 amountBDesired, uint256 amountAMin, uint256 amountBMin, address to, uint256 deadline) external returns (uint256 amountA, uint256 amountB, uint256 liquidity);
+    function addLiquidity(
+        address tokenA,
+        address tokenB,
+        bool stable,
+        uint256 amountADesired,
+        uint256 amountBDesired,
+        uint256 amountAMin,
+        uint256 amountBMin,
+        address to,
+        uint256 deadline
+    ) external returns (uint256 amountA, uint256 amountB, uint256 liquidity);
 
     /// @notice Remove liquidity of two tokens from a Pool
     /// @param tokenA       .
@@ -28,5 +38,14 @@ interface IAerodromeRouter {
     /// @param deadline     Deadline to remove liquidity
     /// @return amountA     Amount of tokenA received
     /// @return amountB     Amount of tokenB received
-    function removeLiquidity(address tokenA, address tokenB, bool stable, uint256 liquidity, uint256 amountAMin, uint256 amountBMin, address to, uint256 deadline) external returns (uint256 amountA, uint256 amountB);
+    function removeLiquidity(
+        address tokenA,
+        address tokenB,
+        bool stable,
+        uint256 liquidity,
+        uint256 amountAMin,
+        uint256 amountBMin,
+        address to,
+        uint256 deadline
+    ) external returns (uint256 amountA, uint256 amountB);
 }

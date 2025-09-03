@@ -19,7 +19,10 @@
     "typechain/**/*",
     "utils/**/*",
     "deploy/**/*",
-    "deploy-args.ts"
+    "deploy-args.ts",
+    "test/fork/fork.test.ts"
   ],
-  "files": ["./hardhat.config.ts"]
+  "files": [
+    "./hardhat.config.ts"
+  ]
 }

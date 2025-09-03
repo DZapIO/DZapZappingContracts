@@ -1,70 +1,113 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
-import { InputErc20Tokens } from "../zap/Types.sol";
+import { InputErc20Tokens, FeeConfig, ZapData, TokenInfo } from "../zap/Types.sol";
+import { PermitBatchTransferFrom } from "../interfaces/IPermit2.sol";
 
 interface IDZapZapCore {
-    // -------------EVENTS-------------
+    // ============= EXTERNAL FUNCTIONS =============
 
-    event DefaultReferralFeeSet(uint256 defaultReferralNativeFeeShare, uint256 defaultReferralTokenFeeShare);
-    event FeeVaultSet(address indexed feeVault);
-    event ZapVerifierSet(address indexed verifier);
-    event ReferralAdded(address indexed referral);
-    event AdminAdded(address indexed account);
-    event AdminRemoved(address indexed account);
-    event Zapped(address indexed user, bytes32 indexed txId);
-    event CrossZapped(address indexed user, bytes32 indexed txId, bytes32 indexed vHash, address refundee);
-    event TokenRecovered(address indexed token, address indexed recipient, uint256 amount);
-    event ERC721Recovered(address indexed token, address indexed recipient, uint256 id);
-    event ERC1155Recovered(address indexed token, address indexed recipient, uint256[] ids, uint256[] amounts);
-    event CallsWhitelistingUpdated(address[] callTo, bool isWhitelisted);
-
-    // -------------RESTRICTED-------------
-
-    function setDefaultReferralFee(uint96 _defaultReferralNativeFeeShare,uint96 _defaultReferralTokenFeeShare) external;
-
-    function setFeeVault(address _feeVault) external;
-
-    function setVerifier(address _verifier) external;
-
-    function addReferral(address _referral, uint96 _nativeFeeShare, uint96 _tokenFeeShare) external;
-
-    function recoverToken(address _token, address _recipient, uint256 _amount) external;
-
-    function recoverERC721(address _token, address _recipient, uint256 _id) external;
-
-    function recoverERC1155(
-        address _token,
-        address _recipient,
-        uint256[] calldata _ids,
-        uint256[] calldata _amounts
-    ) external;
-
-    // -------------EXTERNAL-------------
-
-    function registerAsReferral() external;
-
+    /// @notice Executes a zap with individual token permits
+    /// @param _transactionId Unique transaction identifier
+    /// @param _crosschainData Additional crosschain data
+    /// @param _zapVerificationSignature Verifier signature for zap authorization
+    /// @param _deadline Signature expiration timestamp
+    /// @param _dustReceiver Address to receive leftover tokens
+    /// @param _inputTokens Input tokens with permit data
+    /// @param _feeConfig Fee distribution configuration
+    /// @param _zapData Array of zap execution data
+    /// @param _sweepDust Token addresses to sweep as dust
     function zap(
         bytes32 _transactionId,
-        bytes calldata _data,
-        bytes calldata _signature,
+        bytes calldata _crosschainData,
+        bytes calldata _zapVerificationSignature,
         uint256 _deadline,
-        address _referral,
-        address _dustReciever,
+        address _dustReceiver,
         InputErc20Tokens[] calldata _inputTokens,
+        FeeConfig calldata _feeConfig,
+        ZapData[] calldata _zapData,
         address[] calldata _sweepDust
     ) external payable;
 
-    function crossZap(
+    /// @notice Executes a zap with batch permit2 transfer
+    /// @param _transactionId Unique transaction identifier
+    /// @param _crosschainData Additional crosschain data
+    /// @param _zapVerificationSignature Verifier signature for zap authorization
+    /// @param _batchDepositSignature User signature for batch transfer
+    /// @param _deadline Signature expiration timestamp
+    /// @param _dustReceiver Address to receive leftover tokens
+    /// @param _tokenDepositDetails Batch transfer permit details
+    /// @param _feeConfig Fee distribution configuration
+    /// @param _zapData Array of zap execution data
+    /// @param _sweepDust Token addresses to sweep as dust
+    function zapWithBatchDeposit(
         bytes32 _transactionId,
-        bytes32 _vHash,
-        bytes calldata _data,
-        bytes calldata _signature,
+        bytes calldata _crosschainData,
+        bytes calldata _zapVerificationSignature,
+        bytes calldata _batchDepositSignature,
         uint256 _deadline,
-        address _referral,
-        address _refundee,
-        address _dustReciever,
+        address _dustReceiver,
+        PermitBatchTransferFrom calldata _tokenDepositDetails,
+        FeeConfig calldata _feeConfig,
+        ZapData[] calldata _zapData,
+        address[] calldata _sweepDust
+    ) external payable;
+
+    /// @notice Executes a zap with individual token permits
+    /// @param _transactionId Unique transaction identifier
+    /// @param _crosschainData Additional crosschain data
+    /// @param _zapVerificationSignature Verifier signature for zap authorization
+    /// @param _userIntentSignature User's intent signature
+    /// @param _zapDeadline Zap deadline
+    /// @param _userIntentDeadline User intent deadline
+    /// @param _user User address
+    /// @param _dustReceiver Address to receive leftover tokens
+    /// @param _inputTokens Input tokens with permit data
+    /// @param _feeConfig Fee distribution configuration
+    /// @param _executorFeeInfo Executor fee information
+    /// @param _zapData Array of zap execution data
+    /// @param _sweepDust Token addresses to sweep as dust
+    function executeZap(
+        bytes32 _transactionId,
+        bytes calldata _crosschainData,
+        bytes calldata _zapVerificationSignature,
+        bytes calldata _userIntentSignature,
+        uint256 _zapDeadline,
+        uint256 _userIntentDeadline,
+        address _user,
+        address _dustReceiver,
         InputErc20Tokens[] calldata _inputTokens,
+        FeeConfig calldata _feeConfig,
+        TokenInfo[] calldata _executorFeeInfo,
+        ZapData[] calldata _zapData,
+        address[] calldata _sweepDust
+    ) external payable;
+
+    /// @notice Executes a gasless zap on behalf of a user (with batch permit2)
+    /// @param _transactionId Unique transaction identifier
+    /// @param _crosschainData Additional crosschain data
+    /// @param _zapVerificationSignature Verifier signature for zap authorization
+    /// @param _userIntentSignature User's signature for gasless execution
+    /// @param _zapDeadline Zap verification signature deadline
+    /// @param _user User address on whose behalf the zap is executed
+    /// @param _dustReceiver Address to receive leftover tokens
+    /// @param _tokenDepositDetails Batch transfer permit details
+    /// @param _feeConfig Fee distribution configuration
+    /// @param _executorFeeInfo Executor fee information
+    /// @param _zapData Array of zap execution data
+    /// @param _sweepDust Token addresses to sweep as dust
+    function executeZapWithWitness(
+        bytes32 _transactionId,
+        bytes calldata _crosschainData,
+        bytes calldata _zapVerificationSignature,
+        bytes calldata _userIntentSignature,
+        uint256 _zapDeadline,
+        address _user,
+        address _dustReceiver,
+        PermitBatchTransferFrom calldata _tokenDepositDetails,
+        FeeConfig calldata _feeConfig,
+        TokenInfo[] calldata _executorFeeInfo,
+        ZapData[] calldata _zapData,
         address[] calldata _sweepDust
     ) external payable;
 }

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { Pausable } from "@openzeppelin/contracts/utils/Pausable.sol";
@@ -8,7 +8,7 @@ import { IDZapWalletFactory } from "../interfaces/IDZapWalletFactory.sol";
 import { IDZapExecutor } from "../interfaces/IDZapExecutor.sol";
 import { IDZapWallet } from "../interfaces/IDZapWallet.sol";
 
-import { ExecutorUnauthorizedAccount, WalletNotDeployed, ZeroAddress } from "./../shared/Errors.sol";
+import { ExecutorUnauthorizedAccount, WalletNotDeployed, ZeroAddress } from "./Errors.sol";
 
 /*  
 ---------------------------------------------------------
@@ -76,13 +76,28 @@ contract DZapExecutor is IDZapExecutor, Ownable, Pausable {
         verify callData and call execute
         wallet can update executor 
      */
-    function execute(bytes32 _txId, uint256 _deadline, uint256 _nonce, address _walletAddress, bytes calldata _callData, bytes calldata _validatorSignatures) external payable onlyAuthorizedExecutor whenNotPaused {
+    function execute(
+        bytes32 _txId,
+        uint256 _deadline,
+        uint256 _nonce,
+        address _walletAddress,
+        bytes calldata _callData,
+        bytes calldata _validatorSignatures
+    ) external payable onlyAuthorizedExecutor whenNotPaused {
         require(DZAP_FACTORY.isWalletDeployed(_walletAddress), WalletNotDeployed());
         IDZapWallet(_walletAddress).execute{ value: msg.value }(_txId, _deadline, _nonce, _callData, _validatorSignatures);
         emit Executed(_txId, _walletAddress);
     }
 
-    function deployWalletAndExecute(bytes32 _txId, uint256 _deadline, uint256 _nonce, address _userAddress, string memory _label, bytes calldata _callData, bytes calldata _validatorSignatures) external payable onlyAuthorizedExecutor whenNotPaused {
+    function deployWalletAndExecute(
+        bytes32 _txId,
+        uint256 _deadline,
+        uint256 _nonce,
+        address _userAddress,
+        string memory _label,
+        bytes calldata _callData,
+        bytes calldata _validatorSignatures
+    ) external payable onlyAuthorizedExecutor whenNotPaused {
         address walletAddress = DZAP_FACTORY.deploy(_userAddress, _label);
         IDZapWallet(walletAddress).execute{ value: msg.value }(_txId, _deadline, _nonce, _callData, _validatorSignatures);
         emit DeployAndExecuted(_txId, _userAddress, walletAddress);

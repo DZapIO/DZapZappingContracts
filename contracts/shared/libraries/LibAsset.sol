@@ -123,6 +123,8 @@ library LibAsset {
         if (allowance < _amount || block.timestamp > expiration) {
             IPermit2(_permit2).approve(_token, _spender, type(uint160).max, type(uint48).max);
         }
+
+        maxApproveERC20(_token, _permit2, _amount);
     }
 
     function approveERC721(address _token, address _to, uint256 _tokenId) internal {
